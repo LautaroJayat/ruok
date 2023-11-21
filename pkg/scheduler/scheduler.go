@@ -1,12 +1,12 @@
 package scheduler
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"os"
-	"os/signal"
 	"sync"
-	"syscall"
 	"time"
 
 	"github.com/back-end-labs/ruok/pkg/config"
@@ -54,9 +54,9 @@ func (sched *Scheduler) initJobList(j []*jobs.Job, notifier chan int) {
 			continue
 		}
 		sched.l.list[job.Id] = job
-		job.ExecuteFn = jobhandler.HTTPExecutor
-		job.OnSuccessFn = jobhandler.OnSuccessHandler(sched.storage)
-		job.OnErrorFn = jobhandler.OnErrorHanler(sched.storage)
+		job.Handlers.ExecuteFn = jobhandler.HTTPExecutor
+		job.Handlers.OnSuccessFn = jobhandler.OnSuccessHandler(sched.storage)
+		job.Handlers.OnErrorFn = jobhandler.OnErrorHanler(sched.storage)
 		go job.Schedule(notifier)
 	}
 }
@@ -86,7 +86,28 @@ func (sched *Scheduler) Drain() error {
 	return nil
 }
 
-func (sched *Scheduler) Start() int {
+func (sched *Scheduler) DumpToFile(w io.Writer) error {
+
+	releaseList := []job.Job{}
+	for _, v := range sched.l.list {
+		releaseList = append(releaseList, *v)
+	}
+
+	err := json.NewEncoder(w).Encode(
+		&struct {
+			Jobs []job.Job `json:"jobs"`
+		}{
+			releaseList,
+		},
+	)
+	if err != nil {
+		fmt.Printf("couldnt create json from jobs. error=%q", err.Error())
+	}
+
+	return nil
+}
+
+func (sched *Scheduler) Start(signalsCh chan os.Signal) int {
 	log.Println("about to get jobs")
 	j := sched.storage.GetAvailableJobs(sched.l.AvailableSpace())
 	log.Printf("we got %d jobs\n", len(j))
@@ -97,9 +118,6 @@ func (sched *Scheduler) Start() int {
 
 	log.Println("starting new ticker for poller")
 	pollSignal := time.NewTicker(config.PollingInterval())
-
-	signalCh := make(chan os.Signal, 4)
-	signal.Notify(signalCh, os.Interrupt, syscall.SIGTERM /*syscall.SIGHUP*/)
 
 	for {
 		select {
@@ -116,16 +134,25 @@ func (sched *Scheduler) Start() int {
 				log.Println("scheduling it again")
 				go job.Schedule(notifier)
 			}
-		case <-signalCh:
+		case <-signalsCh:
 			fmt.Println("About to drain because we got a signal")
-			err := sched.Drain()
-			if err != nil {
-				// should dump all jobs in text format
-				// should push an alert to some channel
-				os.Exit(1)
-			}
-			os.Exit(0)
+			pollSignal.Stop()
+			close(notifier)
+			close(signalsCh)
 
+			err := sched.Drain()
+			// if we couldn't release...
+			if err != nil {
+				// should push an alert to some channel
+				f, err := os.Create("./dump.json")
+				if err != nil {
+					fmt.Printf("could not create file to write jobs as json. error=%q", err.Error())
+					return 1
+				}
+				sched.DumpToFile(f)
+				return 1
+			}
+			return 0
 		}
 	}
 }

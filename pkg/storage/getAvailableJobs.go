@@ -122,6 +122,7 @@ SELECT
 			TLSClientCert:   TLSClientCert.String,
 			ClaimedBy:       config.AppName(),
 			Status:          "claimed",
+			Handlers:        job.Handlers{},
 		}
 
 		jobsList = append(jobsList, j)

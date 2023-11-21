@@ -127,9 +127,11 @@ func TestScheduleHook(t *testing.T) {
 		j := &Job{
 			SuccessStatuses: test.OKs,
 			Id:              1,
-			OnErrorFn:       onErrorFn,
-			OnSuccessFn:     onSuccessFn,
-			ExecuteFn:       executionFn,
+			Handlers: Handlers{
+				OnErrorFn:   onErrorFn,
+				OnSuccessFn: onSuccessFn,
+				ExecuteFn:   executionFn,
+			},
 		}
 		j.InitExpression(scheduleRightNowFn)
 		go j.Schedule(ch)
