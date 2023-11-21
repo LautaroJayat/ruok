@@ -3,11 +3,15 @@ package scheduler
 import (
 	"fmt"
 	"log"
+	"os"
+	"os/signal"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/back-end-labs/ruok/pkg/config"
 	"github.com/back-end-labs/ruok/pkg/cronParser"
+	"github.com/back-end-labs/ruok/pkg/job"
 	jobs "github.com/back-end-labs/ruok/pkg/job"
 	jobhandler "github.com/back-end-labs/ruok/pkg/jobHandler"
 	"github.com/back-end-labs/ruok/pkg/storage"
@@ -69,7 +73,20 @@ func (sched *Scheduler) checkForNewJobs(notifier chan int) {
 	sched.initJobList(j, notifier)
 }
 
-func (sched *Scheduler) Start() error {
+func (sched *Scheduler) Drain() error {
+	releaseList := []*job.Job{}
+	for _, v := range sched.l.list {
+		releaseList = append(releaseList, v)
+	}
+	err := sched.storage.ReleaseAll(releaseList)
+	if err != nil {
+		fmt.Printf("could not release all jobs. err=%q.", err.Error())
+		return err
+	}
+	return nil
+}
+
+func (sched *Scheduler) Start() int {
 	log.Println("about to get jobs")
 	j := sched.storage.GetAvailableJobs(sched.l.AvailableSpace())
 	log.Printf("we got %d jobs\n", len(j))
@@ -80,6 +97,9 @@ func (sched *Scheduler) Start() error {
 
 	log.Println("starting new ticker for poller")
 	pollSignal := time.NewTicker(config.PollingInterval())
+
+	signalCh := make(chan os.Signal, 4)
+	signal.Notify(signalCh, os.Interrupt, syscall.SIGTERM /*syscall.SIGHUP*/)
 
 	for {
 		select {
@@ -96,6 +116,16 @@ func (sched *Scheduler) Start() error {
 				log.Println("scheduling it again")
 				go job.Schedule(notifier)
 			}
+		case <-signalCh:
+			fmt.Println("About to drain because we got a signal")
+			err := sched.Drain()
+			if err != nil {
+				// should dump all jobs in text format
+				// should push an alert to some channel
+				os.Exit(1)
+			}
+			os.Exit(0)
+
 		}
 	}
 }

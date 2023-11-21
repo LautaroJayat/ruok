@@ -16,6 +16,7 @@ type Storage interface {
 	WriteDone(*job.Job) error
 	RegisterSelf()
 	GetClient() *pgxpool.Pool
+	ReleaseAll(j []*job.Job) error
 }
 
 type SQLStorage struct {
