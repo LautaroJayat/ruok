@@ -32,6 +32,11 @@ type Header struct {
 	Value string `json:"value"`
 }
 
+type Handlers struct {
+	ExecuteFn   func(*Job) ExecutionResult
+	OnErrorFn   func(*Job)
+	OnSuccessFn func(*Job)
+}
 type Job struct {
 	CronExp         cronParser.CronExpresion
 	CronExpString   string    `json:"cronexp"`
@@ -45,14 +50,12 @@ type Job struct {
 	Endpoint        string    `json:"endpoint"`
 	HttpMethod      string    `json:"httpmethod"`
 	Headers         []Header  `json:"headers"`
-	TLSClientCert   string    `json:"TLSClientCert"`
 	SuccessStatuses []int     `json:"successStatuses"`
 	Status          string    `json:"status"`
 	ClaimedBy       string    `json:"claimedBy"`
+	TLSClientCert   string
 
-	ExecuteFn   func(*Job) ExecutionResult
-	OnErrorFn   func(*Job)
-	OnSuccessFn func(*Job)
+	Handlers Handlers `json:"-"`
 
 	Doer
 }
@@ -100,12 +103,12 @@ type ExecutionResult struct {
 }
 
 func (j *Job) Execute() ExecutionResult {
-	return j.ExecuteFn(j)
+	return j.Handlers.ExecuteFn(j)
 }
 
 func (j *Job) OnError() {
-	j.OnErrorFn(j)
+	j.Handlers.OnErrorFn(j)
 }
 func (j *Job) OnSuccess() {
-	j.OnSuccessFn(j)
+	j.Handlers.OnSuccessFn(j)
 }
