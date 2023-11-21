@@ -16,7 +16,16 @@ INSERT INTO jobs (
     success_statuses,
     status
 ) VALUES
-    ('*/5 * * * * * *', 'https://www.google.com', 'GET', 1, '{200}',  'pending to be claimed')
+    ('*/5 * * * *', 'https://localhost/api/job1', 'GET', 1, '{200}',  'pending to be claimed'),
+    ('0 1 * * *', 'https://localhost/api/job2', 'GET', 1, '{200}',  'pending to be claimed'),
+    ('30 2 * * *', 'https://localhost/api/job3', 'GET', 1, '{200}',  'pending to be claimed'),
+    ('15 3 * * *', 'https://localhost/api/job4', 'GET', 1, '{200}',  'pending to be claimed'),
+    ('0 */6 * * *', 'https://localhost/api/job5', 'GET', 1, '{200}',  'pending to be claimed'),
+    ('*/10 * * * *', 'https://localhost/api/job6', 'GET', 1, '{200}',  'pending to be claimed'),
+    ('45 4 * * *', 'https://localhost/api/job7', 'GET', 1, '{200}',  'pending to be claimed'),
+    ('0 5 * * *', 'https://localhost/api/job8', 'GET', 1, '{200}',  'pending to be claimed'),
+    ('*/15 * * * *', 'https://localhost/api/job9', 'GET', 1, '{200}',  'pending to be claimed'),
+    ('0 6 * * *', 'https://localhost/api/job10', 'GET', 1, '{200}',  'pending to be claimed');
 `
 
 func Seed() {
