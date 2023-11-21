@@ -1,7 +1,7 @@
 # RUOK Scheduler
 ![logo 1](./assets/ruok_logo.png)
 
-An open source took to monitor your services with ease.
+An open source tool to monitor your services with ease.
 
 ## Features
 
