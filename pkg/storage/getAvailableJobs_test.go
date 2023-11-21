@@ -23,7 +23,7 @@ func TestGetJobsQuery(t *testing.T) {
 			t.Error("expected non nil job list")
 		}
 		if len(joblist) != 10 {
-			t.Errorf("expected only 10 jobs, got %d", len(joblist))
+			t.Errorf("expected 10 jobs, got %d", len(joblist))
 		}
 		ctx := context.Background()
 		tx, err := s.GetClient().Begin(ctx)
