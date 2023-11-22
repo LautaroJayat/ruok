@@ -34,7 +34,7 @@ func parseMaxJobs(cfg *Configs) {
 	}
 }
 
-func parsePollInterval(cfg *Configs) {
+func ParsePollInterval(cfg *Configs) {
 	interval, err := strconv.ParseInt(os.Getenv("POLL_INTERVAL_SECONDS"), 10, 64)
 	if err != nil {
 		fmt.Printf("could not parse POLLING_INTERVAL_SECONDS env defaulting to 60. error=%q\n", err.Error())
@@ -43,17 +43,25 @@ func parsePollInterval(cfg *Configs) {
 	}
 }
 
+func getEnvOrDefault(env string, defaultValue string) string {
+	if os.Getenv(env) != "" {
+		return os.Getenv(env)
+	}
+	return defaultValue
+
+}
+
 func FromEnvs() Configs {
 	if globalConfigs == nil {
 		globalConfigs = &Configs{
-			Kind:         os.Getenv("STORAGE_KIND"),
-			Protocol:     os.Getenv("DB_PROTOCOL"),
-			Pass:         os.Getenv("DB_PASS"),
-			User:         os.Getenv("DB_USER"),
-			Host:         os.Getenv("DB_HOST"),
-			Port:         os.Getenv("DB_PORT"),
-			Dbname:       os.Getenv("DB_NAME"),
-			AppName:      os.Getenv("APP_NAME"),
+			Kind:         getEnvOrDefault("STORAGE_KIND", "postgres"),
+			Protocol:     getEnvOrDefault("DB_PROTOCOL", "postgresql"),
+			Pass:         getEnvOrDefault("DB_PASS", "password"),
+			User:         getEnvOrDefault("DB_USER", "user"),
+			Host:         getEnvOrDefault("DB_HOST", "localhost"),
+			Port:         getEnvOrDefault("DB_PORT", "5432"),
+			Dbname:       getEnvOrDefault("DB_NAME", "db1"),
+			AppName:      getEnvOrDefault("APP_NAME", "application1"),
 			MaxJobs:      defaultMaxJobs,
 			PollInterval: defaultPollInterval,
 		}
