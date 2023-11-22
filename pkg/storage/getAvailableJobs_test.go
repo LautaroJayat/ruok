@@ -10,11 +10,11 @@ import (
 func TestGetJobsQuery(t *testing.T) {
 	Drop()
 	Seed()
+	defer Drop()
 	t.Run("Test if we are getting the jobs as we expect", func(t *testing.T) {
 		claimedStatus := "claimed"
 		appName := config.AppName()
 
-		defer Drop()
 		cfg := config.FromEnvs()
 		s, close := NewStorage(&cfg)
 		defer close()

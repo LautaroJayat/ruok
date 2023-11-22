@@ -97,6 +97,14 @@ func (ms *mockStorage) WriteDone(*job.Job) error {
 	return nil
 }
 
+func (ms *mockStorage) GetClaimedJobs(limit int, offset int) []*job.Job {
+	return nil
+}
+
+func (ms *mockStorage) GetClaimedJobsExecutions(jobId int, limit int, offset int) []*job.JobExecution {
+	return nil
+}
+
 func TestScheduler_Start(t *testing.T) {
 	// Test the Start method of Scheduler
 

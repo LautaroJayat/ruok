@@ -12,6 +12,7 @@ import (
 
 func TestWriteDone(t *testing.T) {
 	Drop()
+	defer Drop()
 	t.Run("Done jobs are written as they should", func(t *testing.T) {
 		now := time.Now()
 		j := job.Job{
@@ -132,5 +133,5 @@ func TestWriteDone(t *testing.T) {
 			t.Errorf("Expected ClaimedBy: %s, Got: %s", j.ClaimedBy, claimedBy)
 		}
 	})
-	Drop()
+
 }

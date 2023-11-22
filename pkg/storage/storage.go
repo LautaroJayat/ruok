@@ -12,11 +12,21 @@ import (
 
 // An interface that should help to describe what the Storage is doing
 type Storage interface {
+	SchedulerStorage
+	APIStorage
+}
+
+type SchedulerStorage interface {
 	GetAvailableJobs(limit int) []*job.Job
 	WriteDone(*job.Job) error
 	RegisterSelf()
 	GetClient() *pgxpool.Pool
 	ReleaseAll(j []*job.Job) error
+}
+
+type APIStorage interface {
+	GetClaimedJobs(limit int, offset int) []*job.Job
+	GetClaimedJobsExecutions(jobId int, limit int, offset int) []*job.JobExecution
 }
 
 type SQLStorage struct {

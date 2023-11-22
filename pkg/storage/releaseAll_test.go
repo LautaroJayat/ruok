@@ -11,6 +11,7 @@ import (
 func TestReleaseAll(t *testing.T) {
 	Drop()
 	Seed()
+	defer Drop()
 	t.Run("Test if release process is working as intended", func(t *testing.T) {
 		pendingStatus := "pending to be claimed"
 		defer Drop()

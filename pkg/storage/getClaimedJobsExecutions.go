@@ -3,7 +3,6 @@ package storage
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"fmt"
 	"log"
 	"time"
@@ -12,8 +11,8 @@ import (
 	"github.com/back-end-labs/ruok/pkg/job"
 )
 
-// Gets pending to be claimed jobs from the db and returns a list of all jobs that could be claimed
-func (sqls *SQLStorage) GetAvailableJobs(limit int) []*job.Job {
+// Gets get jobs claimed by this instance
+func (sqls *SQLStorage) GetClaimedJobsExecutions(jobId int, limit int, offset int) []*job.JobExecution {
 	ctx := context.Background()
 	tx, err := sqls.Db.Begin(ctx)
 	defer tx.Rollback(ctx)
@@ -26,21 +25,22 @@ func (sqls *SQLStorage) GetAvailableJobs(limit int) []*job.Job {
 	rows, err := tx.Query(ctx, `
 SELECT 
 	id,
+	job_id,
 	cron_exp_string,
 	endpoint,
 	httpmethod,
 	max_retries,
-	last_execution,
+	execution_time,
 	should_execute_at,
 	last_response_at,
-	lastMessage,
+	last_message,
 	last_status_code,
-	headers_string,
-	success_statuses,
-	tls_client_cert
- FROM jobs 
- WHERE status = 'pending to be claimed' 
- LIMIT  $1;`, limit)
+	success_statuses
+ FROM job_results 
+ WHERE claimed_by = $1 AND job_id = $2
+ LIMIT  $3
+ OFFSET $4;
+ `, config.AppName(), jobId, limit, offset)
 
 	if err != nil {
 		fmt.Println("error", err)
@@ -48,10 +48,11 @@ SELECT
 
 	}
 
-	jobsList := []*job.Job{}
+	jobResultsList := []*job.JobExecution{}
 
 	for rows.Next() {
 		var Id int
+		var JobId int
 		var CronExpString string
 		var Endpoint string
 		var HttpMethod string
@@ -61,12 +62,11 @@ SELECT
 		var LastResponseAt sql.NullInt64
 		var LastMessage sql.NullString
 		var LastStatusCode sql.NullInt32
-		var HeadersString sql.NullString
 		var SuccessStatuses []int
-		var TLSClientCert sql.NullString
 
 		err = rows.Scan(
 			&Id,
+			&JobId,
 			&CronExpString,
 			&Endpoint,
 			&HttpMethod,
@@ -76,80 +76,31 @@ SELECT
 			&LastResponseAt,
 			&LastMessage,
 			&LastStatusCode,
-			&HeadersString,
 			&SuccessStatuses,
-			&TLSClientCert,
 		)
 		if err != nil {
 			fmt.Println("error while scanning", err.Error())
 		}
 
-		Headers := []job.Header{}
-
-		if HeadersString.Valid && HeadersString.String != "" {
-
-			if err := json.Unmarshal([]byte(HeadersString.String), &Headers); err != nil {
-
-				fmt.Printf("couldt unmarshal headers. error=%q\n", err.Error())
-
-				jobsList = append(jobsList, &job.Job{
-					Status: "bad headers",
-					Id:     Id,
-				})
-
-				continue
-			}
-		}
-
-		j := &job.Job{
+		j := &job.JobExecution{
 			Id:              Id,
+			JobId:           JobId,
 			CronExpString:   CronExpString,
 			Endpoint:        Endpoint,
 			HttpMethod:      HttpMethod,
-			MaxRetries:      MaxRetries,
 			LastExecution:   time.UnixMicro(LastExecution.Int64),
 			ShouldExecuteAt: time.UnixMicro(ShouldExecuteAt.Int64),
 			LastResponseAt:  time.UnixMicro(LastResponseAt.Int64),
 			LastMessage:     LastMessage.String,
-			Headers:         Headers,
 			LastStatusCode:  int(LastStatusCode.Int32),
 			SuccessStatuses: SuccessStatuses,
-			TLSClientCert:   TLSClientCert.String,
 			ClaimedBy:       config.AppName(),
-			Status:          "claimed",
-			Handlers:        job.Handlers{},
 		}
 
-		jobsList = append(jobsList, j)
+		jobResultsList = append(jobResultsList, j)
 	}
 
 	rows.Close()
-
-	for i := 0; i < len(jobsList); i++ {
-
-		if jobsList[i].Status == "claimed" {
-			_, err = tx.Exec(
-				ctx,
-				"UPDATE jobs SET claimed_by = $1, status = 'claimed' WHERE id = $2",
-				jobsList[i].ClaimedBy,
-				jobsList[i].Id,
-			)
-		} else {
-			_, err = tx.Exec(
-				ctx,
-				"UPDATE jobs SET claimed_by = NULL, status = $1 WHERE id = $2",
-				jobsList[i].Status,
-				jobsList[i].Id,
-			)
-
-		}
-
-		if err != nil {
-			fmt.Println("error after exec: ", err.Error())
-			return nil
-		}
-
-	}
 
 	err = tx.Commit(ctx)
 
@@ -158,5 +109,5 @@ SELECT
 		return nil
 	}
 
-	return jobsList
+	return jobResultsList
 }
