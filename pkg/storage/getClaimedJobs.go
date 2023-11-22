@@ -12,8 +12,8 @@ import (
 	"github.com/back-end-labs/ruok/pkg/job"
 )
 
-// Gets pending to be claimed jobs from the db and returns a list of all jobs that could be claimed
-func (sqls *SQLStorage) GetAvailableJobs(limit int) []*job.Job {
+// Gets get jobs claimed by this instance
+func (sqls *SQLStorage) GetClaimedJobs(limit int, offset int) []*job.Job {
 	ctx := context.Background()
 	tx, err := sqls.Db.Begin(ctx)
 	defer tx.Rollback(ctx)
@@ -36,11 +36,12 @@ SELECT
 	lastMessage,
 	last_status_code,
 	headers_string,
-	success_statuses,
-	tls_client_cert
+	success_statuses
  FROM jobs 
- WHERE status = 'pending to be claimed' 
- LIMIT  $1;`, limit)
+ WHERE claimed_by = $1 
+ LIMIT  $2
+ OFFSET $3;
+ `, config.AppName(), limit, offset)
 
 	if err != nil {
 		fmt.Println("error", err)
@@ -63,7 +64,6 @@ SELECT
 		var LastStatusCode sql.NullInt32
 		var HeadersString sql.NullString
 		var SuccessStatuses []int
-		var TLSClientCert sql.NullString
 
 		err = rows.Scan(
 			&Id,
@@ -78,7 +78,6 @@ SELECT
 			&LastStatusCode,
 			&HeadersString,
 			&SuccessStatuses,
-			&TLSClientCert,
 		)
 		if err != nil {
 			fmt.Println("error while scanning", err.Error())
@@ -87,17 +86,8 @@ SELECT
 		Headers := []job.Header{}
 
 		if HeadersString.Valid && HeadersString.String != "" {
-
 			if err := json.Unmarshal([]byte(HeadersString.String), &Headers); err != nil {
-
 				fmt.Printf("couldt unmarshal headers. error=%q\n", err.Error())
-
-				jobsList = append(jobsList, &job.Job{
-					Status: "bad headers",
-					Id:     Id,
-				})
-
-				continue
 			}
 		}
 
@@ -114,9 +104,7 @@ SELECT
 			Headers:         Headers,
 			LastStatusCode:  int(LastStatusCode.Int32),
 			SuccessStatuses: SuccessStatuses,
-			TLSClientCert:   TLSClientCert.String,
 			ClaimedBy:       config.AppName(),
-			Status:          "claimed",
 			Handlers:        job.Handlers{},
 		}
 
@@ -124,32 +112,6 @@ SELECT
 	}
 
 	rows.Close()
-
-	for i := 0; i < len(jobsList); i++ {
-
-		if jobsList[i].Status == "claimed" {
-			_, err = tx.Exec(
-				ctx,
-				"UPDATE jobs SET claimed_by = $1, status = 'claimed' WHERE id = $2",
-				jobsList[i].ClaimedBy,
-				jobsList[i].Id,
-			)
-		} else {
-			_, err = tx.Exec(
-				ctx,
-				"UPDATE jobs SET claimed_by = NULL, status = $1 WHERE id = $2",
-				jobsList[i].Status,
-				jobsList[i].Id,
-			)
-
-		}
-
-		if err != nil {
-			fmt.Println("error after exec: ", err.Error())
-			return nil
-		}
-
-	}
 
 	err = tx.Commit(ctx)
 

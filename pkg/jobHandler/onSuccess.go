@@ -5,7 +5,7 @@ import (
 	"github.com/back-end-labs/ruok/pkg/storage"
 )
 
-func OnSuccessHandler(s storage.Storage) func(j *job.Job) {
+func OnSuccessHandler(s storage.SchedulerStorage) func(j *job.Job) {
 	// we can hook mor functionalities here if we want
 	return func(j *job.Job) {
 		s.WriteDone(j)

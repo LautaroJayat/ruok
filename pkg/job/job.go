@@ -60,6 +60,23 @@ type Job struct {
 	Doer
 }
 
+type JobExecution struct {
+	Id              int       `json:"id"`
+	JobId           int       `json:"jobId"`
+	CronExpString   string    `json:"cronexp"`
+	LastExecution   time.Time `json:"lastExecution"`
+	ShouldExecuteAt time.Time `json:"shouldExecuteAt"`
+	LastResponseAt  time.Time `json:"lastResponseAt"`
+	LastMessage     string    `json:"lastMessage"`
+	LastStatusCode  int       `json:"lastStatusCode"`
+	Endpoint        string    `json:"endpoint"`
+	HttpMethod      string    `json:"httpmethod"`
+	Headers         []Header  `json:"headers"`
+	SuccessStatuses []int     `json:"successStatuses"`
+	Status          string    `json:"status"`
+	ClaimedBy       string    `json:"claimedBy"`
+}
+
 func (j *Job) IsSuccess(x int) bool {
 	return Contains(x, j.SuccessStatuses)
 }

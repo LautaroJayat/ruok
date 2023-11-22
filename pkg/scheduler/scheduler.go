@@ -11,7 +11,6 @@ import (
 
 	"github.com/back-end-labs/ruok/pkg/config"
 	"github.com/back-end-labs/ruok/pkg/cronParser"
-	"github.com/back-end-labs/ruok/pkg/job"
 	jobs "github.com/back-end-labs/ruok/pkg/job"
 	jobhandler "github.com/back-end-labs/ruok/pkg/jobHandler"
 	"github.com/back-end-labs/ruok/pkg/storage"
@@ -37,11 +36,11 @@ func NewJobList(maxJobs int) *JobsList {
 
 type Scheduler struct {
 	l       *JobsList
-	storage storage.Storage
+	storage storage.SchedulerStorage
 	parser  cronParser.ParseFn
 }
 
-func NewScheduler(s storage.Storage, jobList *JobsList) *Scheduler {
+func NewScheduler(s storage.SchedulerStorage, jobList *JobsList) *Scheduler {
 	return &Scheduler{l: jobList, storage: s, parser: cronParser.Parse}
 }
 
@@ -74,7 +73,7 @@ func (sched *Scheduler) checkForNewJobs(notifier chan int) {
 }
 
 func (sched *Scheduler) Drain() error {
-	releaseList := []*job.Job{}
+	releaseList := []*jobs.Job{}
 	for _, v := range sched.l.list {
 		releaseList = append(releaseList, v)
 	}
@@ -88,14 +87,14 @@ func (sched *Scheduler) Drain() error {
 
 func (sched *Scheduler) DumpToFile(w io.Writer) error {
 
-	releaseList := []job.Job{}
+	releaseList := []jobs.Job{}
 	for _, v := range sched.l.list {
 		releaseList = append(releaseList, *v)
 	}
 
 	err := json.NewEncoder(w).Encode(
 		&struct {
-			Jobs []job.Job `json:"jobs"`
+			Jobs []jobs.Job `json:"jobs"`
 		}{
 			releaseList,
 		},

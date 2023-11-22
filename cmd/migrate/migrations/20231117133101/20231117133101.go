@@ -24,7 +24,7 @@ func Migrate20231117133101(s storage.Storage) {
 		last_execution bigint,
 		should_execute_at bigint,
 		last_response_at bigint,
-		lastMessage varchar,
+		last_message varchar,
 		last_status_code int,
 		headers_string varchar,
 		success_statuses int[],
