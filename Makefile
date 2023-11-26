@@ -16,6 +16,12 @@ start-db:
 stop-db:
 	docker compose -f Dockercompose.dev.yml down
 
+start-db-tls:
+	docker compose -f Dockercompose.dev.tls.yml up --build
+
+stop-db-tls:
+	docker compose -f Dockercompose.dev.tls.yml down
+
 test:
 	go test -count=1 ./...
 
