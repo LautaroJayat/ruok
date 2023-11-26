@@ -23,7 +23,7 @@ stop-db-tls:
 	docker compose -f Dockercompose.dev.tls.yml down
 
 test:
-	go test -count=1 ./...
+	go test -p 1 -count=1 ./...
 
 run:
 	./main
