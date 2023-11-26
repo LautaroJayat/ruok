@@ -33,7 +33,7 @@ SELECT
 	last_execution,
 	should_execute_at,
 	last_response_at,
-	lastMessage,
+	last_message,
 	last_status_code,
 	headers_string,
 	success_statuses

@@ -1,3 +1,5 @@
 main
 *.zip
 .env
+*.pem
+*.conf

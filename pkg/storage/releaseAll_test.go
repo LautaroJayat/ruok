@@ -14,7 +14,6 @@ func TestReleaseAll(t *testing.T) {
 	defer Drop()
 	t.Run("Test if release process is working as intended", func(t *testing.T) {
 		pendingStatus := "pending to be claimed"
-		defer Drop()
 		cfg := config.FromEnvs()
 		s, close := NewStorage(&cfg)
 		defer close()

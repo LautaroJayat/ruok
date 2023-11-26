@@ -1,0 +1,21 @@
+version: "3"
+
+services:
+  db:
+    image: postgres:14-alpine
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_USER: user
+      POSTGRES_DB: db1
+    ports:
+      - '5432:5432'
+    volumes:
+      - ./ssl:/app
+    command: > 
+        postgres -c ssl=on 
+             -c ssl_cert_file=/app/server-cert.pem 
+             -c ssl_key_file=/app/server-key.pem 
+             -c ssl_ca_file=/app/ca-cert.pem 
+             -c ssl_passphrase_command='echo serverpass' 
+             -c ssl_min_protocol_version=TLSv1.2 
+             -c hba_file=/app/pg_hba.conf

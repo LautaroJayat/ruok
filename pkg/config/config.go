@@ -3,6 +3,8 @@ package config
 import (
 	"fmt"
 	"os"
+	"path"
+	"runtime"
 	"strconv"
 	"time"
 )
@@ -18,6 +20,7 @@ type Configs struct {
 	Host         string
 	Port         string
 	Dbname       string
+	SSLConfigs   SSLConfig
 	AppName      string
 	MaxJobs      int
 	PollInterval time.Duration
@@ -51,8 +54,48 @@ func getEnvOrDefault(env string, defaultValue string) string {
 
 }
 
+func withinContainer(base string) bool {
+	_, err := os.ReadDir(base)
+	return err == nil
+}
+
+type SSLConfig struct {
+	SSLMode     string
+	CACertPath  string
+	SSLCertPath string
+	SSLKeyPath  string
+	SSLPassword string
+}
+
+func getSSLConfigs(baseDir string) SSLConfig {
+	base := baseDir
+
+	tlsConfigs := SSLConfig{
+		// disable | require
+		SSLMode: getEnvOrDefault("DB_SSLMode", "disable"),
+	}
+	if tlsConfigs.SSLMode == "disable" {
+		return tlsConfigs
+	}
+	// Assuming there wont be a "/app" folder in "/"
+	// Just to be able to develop and test outside docker
+	if !withinContainer(base) {
+		_, currentFile, _, _ := runtime.Caller(0)
+		base = path.Dir(currentFile)
+		base = path.Join(base, "..", "..", "ssl")
+		base = path.Clean(base)
+	}
+	tlsConfigs.CACertPath = base + "/ca-cert.pem"
+	tlsConfigs.SSLCertPath = base + "/client-cert.pem"
+	tlsConfigs.SSLKeyPath = base + "/client-key.pem"
+	tlsConfigs.SSLPassword = getEnvOrDefault("DB_SSL_PASS", "clientpass")
+
+	return tlsConfigs
+}
+
 func FromEnvs() Configs {
 	if globalConfigs == nil {
+		baseDir := "/app"
 		globalConfigs = &Configs{
 			Kind:         getEnvOrDefault("STORAGE_KIND", "postgres"),
 			Protocol:     getEnvOrDefault("DB_PROTOCOL", "postgresql"),
@@ -61,11 +104,11 @@ func FromEnvs() Configs {
 			Host:         getEnvOrDefault("DB_HOST", "localhost"),
 			Port:         getEnvOrDefault("DB_PORT", "5432"),
 			Dbname:       getEnvOrDefault("DB_NAME", "db1"),
+			SSLConfigs:   getSSLConfigs(baseDir),
 			AppName:      getEnvOrDefault("APP_NAME", "application1"),
 			MaxJobs:      defaultMaxJobs,
 			PollInterval: defaultPollInterval,
 		}
-
 	}
 	return *globalConfigs
 }

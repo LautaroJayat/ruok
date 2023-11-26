@@ -12,6 +12,7 @@ func TestGetJobsQuery(t *testing.T) {
 	Seed()
 	defer Drop()
 	t.Run("Test if we are getting the jobs as we expect", func(t *testing.T) {
+
 		claimedStatus := "claimed"
 		appName := config.AppName()
 

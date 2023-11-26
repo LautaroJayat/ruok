@@ -46,14 +46,23 @@ func (sqls *SQLStorage) RegisterSelf() {}
 // It connects to a db
 func NewStorage(cfg *config.Configs) (Storage, Closer) {
 	connStr := fmt.Sprintf(
-		"%s://%s:%s@%s:%s/%s?sslmode=disable",
+		"%s://%s:%s@%s:%s/%s?sslmode=%s",
 		cfg.Kind,
 		cfg.User,
 		cfg.Pass,
 		cfg.Host,
 		cfg.Port,
 		cfg.Dbname,
+		cfg.SSLConfigs.SSLMode,
 	)
+	if cfg.SSLConfigs.SSLMode != "disable" {
+		connStr = fmt.Sprintf("%s&sslcert=%s&sslkey=%s&sslrootcert=%s&sslpassword=%s",
+			connStr,
+			cfg.SSLConfigs.SSLCertPath,
+			cfg.SSLConfigs.SSLKeyPath,
+			cfg.SSLConfigs.CACertPath,
+			cfg.SSLConfigs.SSLPassword)
+	}
 	// Connect to database
 	switch cfg.Kind {
 	case "postgres":
