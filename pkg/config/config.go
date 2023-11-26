@@ -56,7 +56,7 @@ func getEnvOrDefault(env string, defaultValue string) string {
 
 func withinContainer(base string) bool {
 	_, err := os.ReadDir(base)
-	return err != nil
+	return err == nil
 }
 
 type SSLConfig struct {
