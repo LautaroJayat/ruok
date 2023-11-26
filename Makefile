@@ -39,7 +39,8 @@ gen-ssl-conf:
 	openssl req -new -key ssl/_client-key.pem -out ssl/client-csr.pem -subj "/CN=BackendLabs" -passin pass:clientpass
 	openssl x509 -req -in ssl/client-csr.pem -CA ssl/ca-cert.pem -CAkey ssl/ca-key.pem -out ssl/client-cert.pem -days 365
 	openssl pkey -in ssl/_client-key.pem -out ssl/client-key.pem -traditional -passin pass:clientpass
-	echo "hostssl db1 all 0.0.0.0/0 cert clientcert=verify-full" > ssl/pg_hba.conf
+	echo "hostssl all all 0.0.0.0/0 trust clientcert=verify-ca" > ssl/pg_hba.conf
+	echo "hostnossl all all 0.0.0.0/0 reject" >> ssl/pg_hba.conf
 	echo "local postgres user trust" >> ssl/pg_hba.conf
 	sudo chown 70:70 ssl/server-key.pem
 
