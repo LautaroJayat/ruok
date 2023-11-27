@@ -1,10 +1,12 @@
 package job
 
 import (
+	"sync"
 	"testing"
 	"time"
 
 	"github.com/back-end-labs/ruok/pkg/cronParser"
+	"github.com/stretchr/testify/assert"
 )
 
 type returnNow struct{}
@@ -125,6 +127,8 @@ func TestScheduleHook(t *testing.T) {
 		}
 		ch := make(chan int)
 		j := &Job{
+			Scheduled:       true,
+			AbortChannel:    make(chan struct{}),
 			SuccessStatuses: test.OKs,
 			Id:              1,
 			Handlers: Handlers{
@@ -150,4 +154,45 @@ func TestScheduleHook(t *testing.T) {
 
 	}
 
+}
+
+func TestAbortJob(t *testing.T) {
+	executorTriggered := false
+	executionFn := func(j *Job) ExecutionResult {
+		executorTriggered = true
+		return ExecutionResult{
+			Status: 200,
+		}
+	}
+	onErrorFn := func(j *Job) {
+	}
+	onSuccessFn := func(j *Job) {
+	}
+	ch := make(chan int)
+	j := &Job{
+		CronExpString:   "* * * * *",
+		Scheduled:       true,
+		AbortChannel:    make(chan struct{}),
+		SuccessStatuses: []int{200, 201},
+		Id:              1,
+		Handlers: Handlers{
+			OnErrorFn:   onErrorFn,
+			OnSuccessFn: onSuccessFn,
+			ExecuteFn:   executionFn,
+		},
+	}
+	j.InitExpression(cronParser.Parse)
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	go func() {
+		status := j.Schedule(ch)
+		if status != "aborted" {
+			t.Errorf("expected result to be 'aborted', instead got %q", status)
+		}
+		wg.Done()
+	}()
+	j.AbortChannel <- struct{}{}
+	wg.Wait()
+	assert.False(t, j.Scheduled)
+	assert.False(t, executorTriggered)
 }

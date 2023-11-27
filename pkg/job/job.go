@@ -54,6 +54,8 @@ type Job struct {
 	Status          string    `json:"status"`
 	ClaimedBy       string    `json:"claimedBy"`
 	TLSClientCert   string
+	AbortChannel    chan struct{} `json:"-"`
+	Scheduled       bool          `json:"-"`
 
 	Handlers Handlers `json:"-"`
 
@@ -91,24 +93,30 @@ func (j *Job) InitExpression(parsefn cronParser.ParseFn) error {
 	return nil
 }
 
-func (j *Job) Schedule(notifier chan int) {
+func (j *Job) Schedule(notifier chan int) string {
 	now := time.Now()
 	nextExecution := j.CronExp.Next(now)
 	log.Printf("next execution will be at: %q", nextExecution.String())
 	timer := time.After(nextExecution.Sub(now))
-	executionTime := <-timer
-	result := j.Execute()
-	j.LastResponseAt = result.ResponseTime
-	j.LastExecution = executionTime
-	j.LastMessage = result.Message
-	j.LastStatusCode = result.Status
+	select {
+	case <-j.AbortChannel:
+		j.Scheduled = false
+		return "aborted"
+	case executionTime := <-timer:
+		result := j.Execute()
+		j.LastResponseAt = result.ResponseTime
+		j.LastExecution = executionTime
+		j.LastMessage = result.Message
+		j.LastStatusCode = result.Status
 
-	if j.IsSuccess(result.Status) {
-		j.OnSuccess()
-	} else {
-		j.OnError()
+		if j.IsSuccess(result.Status) {
+			j.OnSuccess()
+		} else {
+			j.OnError()
+		}
+		notifier <- j.Id
 	}
-	notifier <- j.Id
+	return "re-schedule"
 
 }
 
