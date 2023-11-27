@@ -55,7 +55,7 @@ func NewStorage(cfg *config.Configs) (Storage, Closer) {
 		cfg.Dbname,
 		cfg.SSLConfigs.SSLMode,
 	)
-	if cfg.SSLConfigs.SSLMode != "disable" {
+	if cfg.SSLConfigs.SSLMode != config.DISABLE_SSL {
 		connStr = fmt.Sprintf("%s&sslcert=%s&sslkey=%s&sslrootcert=%s&sslpassword=%s",
 			connStr,
 			cfg.SSLConfigs.SSLCertPath,
