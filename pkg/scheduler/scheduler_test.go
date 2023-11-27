@@ -4,11 +4,11 @@ import (
 	"encoding/json"
 	"os"
 	"testing"
-	"time"
 
 	"github.com/back-end-labs/ruok/pkg/config"
 	"github.com/back-end-labs/ruok/pkg/job"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestJobsList_AvailableSpace(t *testing.T) {
@@ -75,11 +75,22 @@ func (ms *mockStorage) GetAvailableJobs(space int) []*job.Job {
 	// Mock implementation, returns an empty list for simplicity
 	return []*job.Job{
 		{Id: 1, CronExpString: "10 * * * *"},
+		{Id: 2, CronExpString: "10 * * * *"},
+		{Id: 3, CronExpString: "10 * * * *"},
+		{Id: 4, CronExpString: "10 * * * *"},
+		{Id: 5, CronExpString: "10 * * * *"},
+		{Id: 6, CronExpString: "10 * * * *"},
+		{Id: 7, CronExpString: "10 * * * *"},
+		{Id: 8, CronExpString: "10 * * * *"},
+		{Id: 9, CronExpString: "10 * * * *"},
+		{Id: 10, CronExpString: "10 * * * *"},
 	}
 }
 
+var releasedJobs []*job.Job
+
 func (ms *mockStorage) ReleaseAll(jobs []*job.Job) error {
-	// Mock implementation, does nothing for simplicity
+	releasedJobs = jobs
 	return nil
 }
 
@@ -93,7 +104,7 @@ func (ms *mockStorage) RegisterSelf() {
 
 }
 
-func (ms *mockStorage) WriteDone(*job.Job) error {
+func (ms *mockStorage) WriteDone(j *job.Job) error {
 	return nil
 }
 
@@ -106,30 +117,37 @@ func (ms *mockStorage) GetClaimedJobsExecutions(jobId int, limit int, offset int
 }
 
 func TestScheduler_Start(t *testing.T) {
-	// Test the Start method of Scheduler
-
+	releasedJobs = []*job.Job{}
 	mockedJobList = NewJobList(config.MaxJobs())
 	sched := NewScheduler(&mockStorage{}, mockedJobList)
 
-	// Use a buffered channel for notifications
 	exitCodeCh := make(chan int, 1)
 	signalCh := make(chan os.Signal, 1)
-	// Start the scheduler in a separate goroutine
 	go func() {
 		exitCode := sched.Start(signalCh)
 		exitCodeCh <- exitCode
 	}()
 
-	time.Sleep(100 * time.Millisecond)
-	if _, ok := mockedJobList.list[1]; !ok {
-		t.Errorf("Job was not scheduled again after completion")
+	for _, j := range sched.l.list {
+		t.Log(j.Id, "scheduled?", j.Scheduled)
+		assert.True(t, j.Scheduled)
 	}
-
-	// Simulate receiving an interrupt signal
 	signalCh <- os.Interrupt
 	exitCode := <-exitCodeCh
+
 	if exitCode != 0 {
 		t.Errorf("expected exit code 0 in a normal flow. Instead got %d", exitCode)
+	}
+
+	for i := 1; i <= 10; i++ {
+		j, ok := mockedJobList.list[i]
+		assert.True(t, ok)
+		assert.False(t, j.Scheduled)
+		releasedJobsId := []int{}
+		for _, rj := range releasedJobs {
+			releasedJobsId = append(releasedJobsId, rj.Id)
+		}
+		assert.Contains(t, releasedJobsId, j.Id)
 	}
 
 }

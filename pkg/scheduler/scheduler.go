@@ -52,10 +52,12 @@ func (sched *Scheduler) initJobList(j []*jobs.Job, notifier chan int) {
 			log.Printf("erro=%q", err.Error())
 			continue
 		}
-		sched.l.list[job.Id] = job
+		job.Scheduled = true
+		job.AbortChannel = make(chan struct{})
 		job.Handlers.ExecuteFn = jobhandler.HTTPExecutor
 		job.Handlers.OnSuccessFn = jobhandler.OnSuccessHandler(sched.storage)
 		job.Handlers.OnErrorFn = jobhandler.OnErrorHanler(sched.storage)
+		sched.l.list[job.Id] = job
 		go job.Schedule(notifier)
 	}
 }
@@ -65,7 +67,7 @@ func (sched *Scheduler) checkForNewJobs(notifier chan int) {
 	defer sched.l.lock.Unlock()
 	freeSpace := config.MaxJobs() - len(sched.l.list)
 	if freeSpace == 0 {
-		log.Println("no more free space for")
+		log.Println("no more free space for new jobs")
 		return
 	}
 	j := sched.storage.GetAvailableJobs(freeSpace)
@@ -75,7 +77,21 @@ func (sched *Scheduler) checkForNewJobs(notifier chan int) {
 func (sched *Scheduler) Drain() error {
 	releaseList := []*jobs.Job{}
 	for _, v := range sched.l.list {
+		v.AbortChannel <- struct{}{}
+		close(v.AbortChannel)
 		releaseList = append(releaseList, v)
+	}
+	for {
+		wait := false
+		for _, v := range sched.l.list {
+			if v.Scheduled {
+				wait = true
+			}
+		}
+		if !wait {
+			break
+		}
+		time.Sleep(time.Microsecond * 100)
 	}
 	err := sched.storage.ReleaseAll(releaseList)
 	if err != nil {
@@ -129,10 +145,11 @@ func (sched *Scheduler) Start(signalsCh chan os.Signal) int {
 			job, ok := sched.l.list[doneJobId]
 			if !ok {
 				fmt.Println("error=job not found")
-			} else {
-				log.Println("scheduling it again")
-				go job.Schedule(notifier)
+				continue
 			}
+			log.Println("scheduling it again")
+			go job.Schedule(notifier)
+
 		case <-signalsCh:
 			fmt.Println("About to drain because we got a signal")
 			pollSignal.Stop()
