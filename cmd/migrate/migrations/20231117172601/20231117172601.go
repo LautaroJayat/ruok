@@ -19,7 +19,7 @@ func Migrate20231117172601(client storage.Storage) {
 	}
 	_, err = tx.Exec(ctx, `
 	CREATE TABLE IF NOT EXISTS public.job_results (
-		id bigserial,
+		id bigserial PRIMARY KEY,
 		job_id bigint,
 		cron_exp_string varchar,
 		endpoint varchar,
@@ -34,6 +34,8 @@ func Migrate20231117172601(client storage.Storage) {
 		tls_client_cert varchar,
 		status varchar,
 		claimed_by varchar
+		created_at bigint DEFAULT micro_unix_now(),
+		deleted_at bigint,
 	  );`)
 	if err != nil {
 		fmt.Println("error", err)

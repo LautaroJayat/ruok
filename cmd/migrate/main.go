@@ -1,6 +1,7 @@
 package main
 
 import (
+	m20231117133100 "github.com/back-end-labs/ruok/cmd/migrate/migrations/20231117133100"
 	m20231117133101 "github.com/back-end-labs/ruok/cmd/migrate/migrations/20231117133101"
 	m20231117172601 "github.com/back-end-labs/ruok/cmd/migrate/migrations/20231117172601"
 
@@ -11,6 +12,7 @@ import (
 func main() {
 
 	migrations := []func(storage.Storage){
+		m20231117133100.Migrate20231117133100,
 		m20231117133101.Migrate20231117133101,
 		m20231117172601.Migrate20231117172601,
 	}
