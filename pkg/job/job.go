@@ -77,6 +77,8 @@ type JobExecution struct {
 	SuccessStatuses []int     `json:"successStatuses"`
 	Status          string    `json:"status"`
 	ClaimedBy       string    `json:"claimedBy"`
+	CreatedAt       int       `json:"createdAt"`
+	DeletedAt       int       `json:"deletedAt,omitempty"`
 }
 
 func (j *Job) IsSuccess(x int) bool {
