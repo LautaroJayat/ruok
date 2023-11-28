@@ -53,6 +53,7 @@ type Job struct {
 	SuccessStatuses []int     `json:"successStatuses"`
 	Status          string    `json:"status"`
 	ClaimedBy       string    `json:"claimedBy"`
+	CreatedAt       int       `json:"createdAt"`
 	TLSClientCert   string
 	AbortChannel    chan struct{} `json:"-"`
 	Scheduled       bool          `json:"-"`

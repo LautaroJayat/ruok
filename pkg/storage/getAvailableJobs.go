@@ -37,7 +37,8 @@ SELECT
 	last_status_code,
 	headers_string,
 	success_statuses,
-	tls_client_cert
+	tls_client_cert,
+	created_at
  FROM jobs 
  WHERE status = 'pending to be claimed' 
  LIMIT  $1;`, limit)
@@ -64,6 +65,7 @@ SELECT
 		var HeadersString sql.NullString
 		var SuccessStatuses []int
 		var TLSClientCert sql.NullString
+		var CreatedAt int
 
 		err = rows.Scan(
 			&Id,
@@ -79,6 +81,7 @@ SELECT
 			&HeadersString,
 			&SuccessStatuses,
 			&TLSClientCert,
+			&CreatedAt,
 		)
 		if err != nil {
 			fmt.Println("error while scanning", err.Error())
@@ -118,6 +121,7 @@ SELECT
 			ClaimedBy:       config.AppName(),
 			Status:          "claimed",
 			Handlers:        job.Handlers{},
+			CreatedAt:       CreatedAt,
 		}
 
 		jobsList = append(jobsList, j)

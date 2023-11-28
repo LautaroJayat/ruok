@@ -12,7 +12,6 @@ func TestGetJobsQuery(t *testing.T) {
 	Seed()
 	defer Drop()
 	t.Run("Test if we are getting the jobs as we expect", func(t *testing.T) {
-
 		claimedStatus := "claimed"
 		appName := config.AppName()
 
@@ -32,7 +31,7 @@ func TestGetJobsQuery(t *testing.T) {
 		if err != nil {
 			t.Errorf("couldn't start transaction for testing. error=%q", err)
 		}
-		rows, err := tx.Query(ctx, "select claimed_by, status from jobs")
+		rows, err := tx.Query(ctx, "select claimed_by, status, created_at from jobs")
 
 		if err != nil {
 			t.Errorf("couldn't exec transaction for testing. error=%q", err)
@@ -40,7 +39,11 @@ func TestGetJobsQuery(t *testing.T) {
 
 		for rows.Next() {
 			var claimedBy, claimed string
-			rows.Scan(&claimedBy, &claimed)
+			var createdAt int
+			err := rows.Scan(&claimedBy, &claimed, &createdAt)
+			if err != nil {
+				t.Errorf("expected nil error while querying jobs. error=%q", err.Error())
+			}
 			if claimedBy != appName {
 				t.Errorf("expected claimed_by to be %q, instead got %q", appName, claimedBy)
 				break
@@ -48,6 +51,9 @@ func TestGetJobsQuery(t *testing.T) {
 			if claimed != claimedStatus {
 				t.Errorf("expected status to be %q, instead got %q", claimedStatus, claimed)
 				break
+			}
+			if createdAt == 0 {
+				t.Errorf("expected positive created_at colulmn, got %d", createdAt)
 			}
 		}
 		tx.Commit(ctx)
