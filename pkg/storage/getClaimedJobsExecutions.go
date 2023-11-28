@@ -36,8 +36,7 @@ SELECT
 	last_message,
 	last_status_code,
 	success_statuses,
-	created_at,
-	deleted_at,
+	created_at
  FROM job_results 
  WHERE claimed_by = $1 AND job_id = $2
  LIMIT  $3
@@ -66,7 +65,6 @@ SELECT
 		var LastStatusCode sql.NullInt32
 		var SuccessStatuses []int
 		var CreatedAt int
-		var DeletedAt sql.NullInt32
 
 		err = rows.Scan(
 			&Id,
@@ -82,7 +80,6 @@ SELECT
 			&LastStatusCode,
 			&SuccessStatuses,
 			&CreatedAt,
-			DeletedAt,
 		)
 		if err != nil {
 			fmt.Println("error while scanning", err.Error())
@@ -101,6 +98,7 @@ SELECT
 			LastStatusCode:  int(LastStatusCode.Int32),
 			SuccessStatuses: SuccessStatuses,
 			ClaimedBy:       config.AppName(),
+			CreatedAt:       CreatedAt,
 		}
 
 		jobResultsList = append(jobResultsList, j)

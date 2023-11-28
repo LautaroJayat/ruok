@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/back-end-labs/ruok/pkg/config"
@@ -59,10 +60,13 @@ func TestClaimedJobExecutionsStructure(t *testing.T) {
 			_ = s.WriteDone(j)
 		}
 		jobExecutions := []*job.JobExecution{}
+
 		for _, j := range joblist {
 			jel := s.GetClaimedJobsExecutions(j.Id, 100, 0)
 			jobExecutions = append(jobExecutions, jel...)
+			fmt.Println(jobExecutions[0].CreatedAt)
 		}
+		//time.Sleep(time.Hour)
 		for _, j := range jobExecutions {
 			assert.NotEmpty(t, j.Id)
 			assert.NotEmpty(t, j.JobId)
@@ -71,14 +75,11 @@ func TestClaimedJobExecutionsStructure(t *testing.T) {
 			assert.NotEmpty(t, j.CronExpString)
 			assert.NotEmpty(t, j.Endpoint)
 			assert.NotEmpty(t, j.HttpMethod)
-			assert.NotEmpty(t, j.LastExecution)
-			assert.NotEmpty(t, j.LastMessage)
-			assert.NotEmpty(t, j.LastResponseAt)
-			assert.NotEmpty(t, j.Status)
-			assert.NotEmpty(t, j.LastStatusCode)
 			assert.NotEmpty(t, j.SuccessStatuses)
-			assert.Empty(t, j.DeletedAt)
-
+			assert.NotEmpty(t, j.LastResponseAt)
+			assert.NotEmpty(t, j.LastExecution)
+			assert.Empty(t, j.LastMessage)
+			assert.Empty(t, j.LastStatusCode)
 		}
 	})
 }

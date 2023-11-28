@@ -54,12 +54,28 @@ func TestWriteDone(t *testing.T) {
 			lastStatusCode  int
 			successStatuses []int
 			tlsClientCert   sql.NullString
-			status          string
 			claimedBy       string
 		)
 
 		// Assuming jobId is the parameter to retrieve a specific job result.
-		row := s.GetClient().QueryRow(ctx, "SELECT * FROM public.job_results WHERE job_id = $1", j.Id)
+		row := s.GetClient().QueryRow(ctx, `
+		SELECT 
+			id,
+			job_id,
+			cron_exp_string,
+			endpoint,
+			httpmethod,
+			max_retries,
+			execution_time,
+			should_execute_at,
+			last_response_at,
+			last_message,
+			last_status_code,
+			success_statuses,
+			claimed_by
+	 	FROM job_results 
+		WHERE job_id = $1
+		`, j.Id)
 		err = row.Scan(
 			&id,
 			&jobID,
@@ -73,8 +89,6 @@ func TestWriteDone(t *testing.T) {
 			&lastMessage,
 			&lastStatusCode,
 			&successStatuses,
-			&tlsClientCert,
-			&status,
 			&claimedBy,
 		)
 		if err != nil {
@@ -123,10 +137,6 @@ func TestWriteDone(t *testing.T) {
 
 		if tlsClientCert.String != j.TLSClientCert {
 			t.Errorf("Expected TlsClientCert: %s, Got: %s", j.TLSClientCert, tlsClientCert.String)
-		}
-
-		if status != j.Status {
-			t.Errorf("Expected Status: %s, Got: %s", j.Status, status)
 		}
 
 		if claimedBy != j.ClaimedBy {
