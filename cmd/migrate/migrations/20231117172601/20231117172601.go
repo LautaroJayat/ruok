@@ -33,9 +33,9 @@ func Migrate20231117172601(client storage.Storage) {
 		success_statuses int[],
 		tls_client_cert varchar,
 		status varchar,
-		claimed_by varchar
+		claimed_by varchar,
 		created_at bigint DEFAULT micro_unix_now(),
-		deleted_at bigint,
+		deleted_at bigint
 	  );`)
 	if err != nil {
 		fmt.Println("error", err)
