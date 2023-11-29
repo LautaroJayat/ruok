@@ -2,8 +2,9 @@ package storage
 
 import (
 	"context"
-	"fmt"
-	"log"
+	"errors"
+
+	"github.com/rs/zerolog/log"
 
 	"github.com/back-end-labs/ruok/pkg/job"
 )
@@ -15,8 +16,8 @@ func (sqls *SQLStorage) WriteDone(j *job.Job) error {
 	defer tx.Rollback(ctx)
 
 	if err != nil {
-		log.Printf("error=%q\n", err)
-		return fmt.Errorf("could not insert into jobs_results. error=%q", err)
+		log.Error().Err(err).Msg("could not start transaction to write job execution result")
+		return errors.New("could not insert into jobs_results")
 	}
 	_, err = tx.Exec(ctx, `
 	INSERT INTO job_results (
@@ -39,15 +40,15 @@ func (sqls *SQLStorage) WriteDone(j *job.Job) error {
 		j.SuccessStatuses, j.Status, j.ClaimedBy,
 	)
 	if err != nil {
-		fmt.Printf("There was a problem while trying to rollback query execution into job_results. error=%q", err)
-		return fmt.Errorf("could not insert into job_results. error=%q", err)
+		log.Error().Err(err).Msg("could not insert into job_results")
+		return errors.New("could not insert into job_results")
 	}
 
 	err = tx.Commit(ctx)
 
 	if err != nil {
-		fmt.Printf("There was a problem while trying to rollback transaction into jobs_result. error=%q", err)
-		return fmt.Errorf("could not commit transaction into job_results. error=%q", err)
+		log.Error().Err(err).Msg("could not commit transaction to insert into job_results")
+		return errors.New("could not commit transaction into job_results")
 	}
 	return nil
 }

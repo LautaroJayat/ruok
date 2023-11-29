@@ -3,9 +3,10 @@ package storage
 import (
 	"context"
 	"database/sql"
-	"fmt"
-	"log"
+
 	"time"
+
+	"github.com/rs/zerolog/log"
 
 	"github.com/back-end-labs/ruok/pkg/config"
 	"github.com/back-end-labs/ruok/pkg/job"
@@ -15,12 +16,13 @@ import (
 func (sqls *SQLStorage) GetClaimedJobsExecutions(jobId int, limit int, offset int) []*job.JobExecution {
 	ctx := context.Background()
 	tx, err := sqls.Db.Begin(ctx)
-	defer tx.Rollback(ctx)
 
 	if err != nil {
-		log.Printf("error=%v\n", err)
+		log.Error().Err(err).Msg("could not start transaction to get claimed job executions")
 		return nil
 	}
+
+	defer tx.Rollback(ctx)
 
 	rows, err := tx.Query(ctx, `
 SELECT 
@@ -44,7 +46,7 @@ SELECT
  `, config.AppName(), jobId, limit, offset)
 
 	if err != nil {
-		fmt.Println("error", err)
+		log.Error().Err(err).Msg("could not start transaction to get claimed job executions")
 		return nil
 
 	}
@@ -82,7 +84,7 @@ SELECT
 			&CreatedAt,
 		)
 		if err != nil {
-			fmt.Println("error while scanning", err.Error())
+			log.Error().Err(err).Msg("could not scan claimed job executions row")
 		}
 
 		j := &job.JobExecution{
@@ -109,7 +111,7 @@ SELECT
 	err = tx.Commit(ctx)
 
 	if err != nil {
-		log.Printf("couldn't commit transaction. error=%q\n", err)
+		log.Error().Err(err).Msg("could not commit 'get claimed job executions' transaction")
 		return nil
 	}
 

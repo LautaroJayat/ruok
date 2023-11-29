@@ -4,9 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
-	"fmt"
-	"log"
 	"time"
+
+	"github.com/rs/zerolog/log"
 
 	"github.com/back-end-labs/ruok/pkg/config"
 	"github.com/back-end-labs/ruok/pkg/job"
@@ -16,12 +16,13 @@ import (
 func (sqls *SQLStorage) GetAvailableJobs(limit int) []*job.Job {
 	ctx := context.Background()
 	tx, err := sqls.Db.Begin(ctx)
-	defer tx.Rollback(ctx)
 
 	if err != nil {
-		log.Printf("error=%v\n", err)
+		log.Error().Err(err).Msg("could not start transaction to get available jobs")
 		return nil
 	}
+
+	defer tx.Rollback(ctx)
 
 	rows, err := tx.Query(ctx, `
 SELECT 
@@ -44,7 +45,7 @@ SELECT
  LIMIT  $1;`, limit)
 
 	if err != nil {
-		fmt.Println("error", err)
+		log.Error().Err(err).Msg("could not query rows to get available jobs")
 		return nil
 
 	}
@@ -84,7 +85,7 @@ SELECT
 			&CreatedAt,
 		)
 		if err != nil {
-			fmt.Println("error while scanning", err.Error())
+			log.Error().Err(err).Msg("could not scan available jobs row")
 		}
 
 		Headers := []job.Header{}
@@ -93,7 +94,7 @@ SELECT
 
 			if err := json.Unmarshal([]byte(HeadersString.String), &Headers); err != nil {
 
-				fmt.Printf("couldt unmarshal headers. error=%q\n", err.Error())
+				log.Error().Err(err).Msg("could not unmarshal headers of available job")
 
 				jobsList = append(jobsList, &job.Job{
 					Status: "bad headers",
@@ -149,7 +150,7 @@ SELECT
 		}
 
 		if err != nil {
-			fmt.Println("error after exec: ", err.Error())
+			log.Error().Err(err).Msg("could not update status/claimed_by of available job row")
 			return nil
 		}
 
@@ -158,7 +159,7 @@ SELECT
 	err = tx.Commit(ctx)
 
 	if err != nil {
-		log.Printf("couldn't commit transaction. error=%q\n", err)
+		log.Error().Err(err).Msg("could not commit 'get available jobs' transaction")
 		return nil
 	}
 

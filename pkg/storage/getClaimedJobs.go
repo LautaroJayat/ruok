@@ -4,9 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
-	"fmt"
-	"log"
 	"time"
+
+	"github.com/rs/zerolog/log"
 
 	"github.com/back-end-labs/ruok/pkg/config"
 	"github.com/back-end-labs/ruok/pkg/job"
@@ -16,12 +16,13 @@ import (
 func (sqls *SQLStorage) GetClaimedJobs(limit int, offset int) []*job.Job {
 	ctx := context.Background()
 	tx, err := sqls.Db.Begin(ctx)
-	defer tx.Rollback(ctx)
 
 	if err != nil {
-		log.Printf("error=%v\n", err)
+		log.Error().Err(err).Msg("could not start transaction to get claimed jobs")
 		return nil
 	}
+
+	defer tx.Rollback(ctx)
 
 	rows, err := tx.Query(ctx, `
 SELECT 
@@ -44,7 +45,7 @@ SELECT
  `, config.AppName(), limit, offset)
 
 	if err != nil {
-		fmt.Println("error", err)
+		log.Error().Err(err).Msg("could not query for claimed jobs")
 		return nil
 
 	}
@@ -80,14 +81,14 @@ SELECT
 			&SuccessStatuses,
 		)
 		if err != nil {
-			fmt.Println("error while scanning", err.Error())
+			log.Error().Err(err).Msg("could not scan claimed jobs row")
 		}
 
 		Headers := []job.Header{}
 
 		if HeadersString.Valid && HeadersString.String != "" {
 			if err := json.Unmarshal([]byte(HeadersString.String), &Headers); err != nil {
-				fmt.Printf("couldt unmarshal headers. error=%q\n", err.Error())
+				log.Error().Err(err).Msg("could not unmarshal headers of claimed job")
 			}
 		}
 
@@ -116,7 +117,7 @@ SELECT
 	err = tx.Commit(ctx)
 
 	if err != nil {
-		log.Printf("couldn't commit transaction. error=%q\n", err)
+		log.Error().Err(err).Msg("could not commit 'get claimed jobs' transaction")
 		return nil
 	}
 
