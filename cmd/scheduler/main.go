@@ -4,13 +4,15 @@ import (
 	// add this
 
 	"context"
-	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
+	"github.com/rs/zerolog/pkgerrors"
 
 	"github.com/back-end-labs/ruok/pkg/api"
 	"github.com/back-end-labs/ruok/pkg/config"
@@ -19,7 +21,15 @@ import (
 )
 
 func main() {
+
 	cfg := config.FromEnvs()
+
+	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
+	zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
+	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+
+	log.Info().Msg("Starting RUOK scheduler :)")
+
 	s, close := storage.NewStorage(&cfg)
 	defer close()
 	jobsList := scheduler.NewJobList(int(cfg.MaxJobs))
@@ -31,22 +41,22 @@ func main() {
 	}
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			fmt.Printf("error while api was listening: %q\n", err.Error())
+			log.Error().Err(err).Msg("error while HTTP server was listening")
 		}
 	}()
 
 	exitStatus := scheduler.NewScheduler(s, jobsList).Start(signalCh)
-	log.Println("Shutdown Server ...")
+	log.Info().Msg("Shutting down server")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	if err := srv.Shutdown(ctx); err != nil {
-		fmt.Println("Server Shutdown error:", err.Error())
+		log.Error().Err(err).Msg("Server Shutdown error")
 		exitStatus = 1
 	}
 	<-ctx.Done()
-	fmt.Println("timeout of 5 seconds.")
-	fmt.Println("Server exiting")
+	log.Info().Msg("timeout of 5 seconds.")
+	log.Info().Msg("Server exiting")
 	os.Exit(exitStatus)
 }

@@ -3,11 +3,12 @@ package jobhandler
 import (
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"strings"
 	"time"
 	"unicode/utf8"
+
+	"github.com/rs/zerolog/log"
 
 	"github.com/back-end-labs/ruok/pkg/job"
 )
@@ -16,7 +17,7 @@ func HTTPExecutor(j *job.Job) job.ExecutionResult {
 	r, err := http.NewRequest(j.HttpMethod, j.Endpoint, nil)
 
 	if err != nil {
-		fmt.Printf("could not create request=%q\n", err)
+		log.Error().Err(err).Msgf("could not create request for job %v", j.Id)
 		return job.ExecutionResult{}
 	}
 
@@ -30,7 +31,8 @@ func HTTPExecutor(j *job.Job) job.ExecutionResult {
 	result.ResponseTime = time.Now()
 
 	if err != nil {
-		fmt.Printf("there was an error while sending the request. error=%q\n", err)
+
+		log.Error().Err(err).Msgf("there was an error while sending the request for job %v", j.Id)
 		result.SchedulerError = err.Error()
 		return result
 	}
@@ -48,7 +50,7 @@ func HTTPExecutor(j *job.Job) job.ExecutionResult {
 		}
 
 		if !utf8.ValidString(stringBody) {
-			log.Println("Converting service response to valid UTF8")
+			log.Info().Msgf("Converting service response to valid UTF8 for job %v", j.Id)
 			stringBody = strings.ToValidUTF8(stringBody, "")
 		}
 

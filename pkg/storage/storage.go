@@ -2,8 +2,10 @@ package storage
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"log"
+
+	"github.com/rs/zerolog/log"
 
 	"github.com/back-end-labs/ruok/pkg/config"
 	"github.com/back-end-labs/ruok/pkg/job"
@@ -68,13 +70,13 @@ func NewStorage(cfg *config.Configs) (Storage, Closer) {
 	case "postgres":
 		db, err := pgxpool.New(context.Background(), connStr)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal().Err(err).Msg("could no stablish a connection with the database, aborting.")
 		}
 		s := &SQLStorage{Db: db}
 		return s, db.Close
 
 	default:
-		log.Fatalf("error=unrecognized storage %q. Must use one of [ postgres ]", cfg.Kind)
+		log.Fatal().Err(errors.New("unrecognized storage")).Msg("Kind field must use one of [ postgres ]")
 	}
 	return nil, nil
 }

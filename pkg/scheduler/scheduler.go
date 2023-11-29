@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
+
+	"github.com/rs/zerolog/log"
+
 	"os"
 	"sync"
 	"time"
@@ -49,7 +51,7 @@ func (sched *Scheduler) initJobList(j []*jobs.Job, notifier chan int) {
 		err := job.InitExpression(sched.parser)
 		if err != nil {
 			// TODO: log error in db and continue without this one
-			log.Printf("erro=%q", err.Error())
+			log.Info().Msgf("skipping job %v because we couldn't init cron expression %q", job.Id, job.CronExpString)
 			continue
 		}
 		job.Scheduled = true
@@ -67,7 +69,7 @@ func (sched *Scheduler) checkForNewJobs(notifier chan int) {
 	defer sched.l.lock.Unlock()
 	freeSpace := config.MaxJobs() - len(sched.l.list)
 	if freeSpace == 0 {
-		log.Println("no more free space for new jobs")
+		log.Info().Msg("There is no more space for new jobs")
 		return
 	}
 	j := sched.storage.GetAvailableJobs(freeSpace)
@@ -95,7 +97,7 @@ func (sched *Scheduler) Drain() error {
 	}
 	err := sched.storage.ReleaseAll(releaseList)
 	if err != nil {
-		fmt.Printf("could not release all jobs. err=%q.", err.Error())
+		log.Error().Err(err).Msg("could not release claimed jobs. They may still be marked as claimed by this application in the db")
 		return err
 	}
 	return nil
@@ -123,35 +125,36 @@ func (sched *Scheduler) DumpToFile(w io.Writer) error {
 }
 
 func (sched *Scheduler) Start(signalsCh chan os.Signal) int {
-	log.Println("about to get jobs")
+	log.Info().Msg("about to get available jobs to start working :)")
+
 	j := sched.storage.GetAvailableJobs(sched.l.AvailableSpace())
-	log.Printf("we got %d jobs\n", len(j))
+	log.Info().Msgf("got %d jobs", len(j))
+
 	notifier := make(chan int, len(sched.l.list))
 
-	log.Println("about init jobs")
+	log.Info().Msg("About to init all jobs")
 	sched.initJobList(j, notifier)
 
-	log.Println("starting new ticker for poller")
+	log.Info().Msg("starting new ticker for poller")
 	pollSignal := time.NewTicker(config.PollingInterval())
 
 	for {
 		select {
 		case <-pollSignal.C:
-			log.Println("Tick! time for polling")
+			log.Info().Msg("Tick! time for polling")
 			sched.checkForNewJobs(notifier)
-
 		case doneJobId := <-notifier:
-			log.Println("job done!")
+			log.Info().Msgf("job %v done!", doneJobId)
 			job, ok := sched.l.list[doneJobId]
 			if !ok {
-				fmt.Println("error=job not found")
+				log.Error().Msgf("jodb %v marked as done but can't reschedule because it is not on our job list", doneJobId)
 				continue
 			}
-			log.Println("scheduling it again")
+			log.Info().Msgf("rescheduling job %v", doneJobId)
 			go job.Schedule(notifier)
 
 		case <-signalsCh:
-			fmt.Println("About to drain because we got a signal")
+			log.Info().Msg("About to drain because we got a signal")
 			pollSignal.Stop()
 			close(notifier)
 			close(signalsCh)
@@ -160,14 +163,22 @@ func (sched *Scheduler) Start(signalsCh chan os.Signal) int {
 			// if we couldn't release...
 			if err != nil {
 				// should push an alert to some channel
+				log.Error().Err(err).Msg("there was a problem with the database, trying to dump jobs into a file")
 				f, err := os.Create("./dump.json")
 				if err != nil {
-					fmt.Printf("could not create file to write jobs as json. error=%q", err.Error())
+					log.Error().Err(err).Msg("could not create file to write jobs as json")
 					return 1
 				}
-				sched.DumpToFile(f)
+				err = sched.DumpToFile(f)
+				if err != nil {
+					log.Error().Err(err).Msg("could not write jobs into a file")
+					return 1
+				}
+				log.Info().Msg("Dumped all jobs into a file")
 				return 1
+
 			}
+			log.Info().Msg("Drain operation succeeded")
 			return 0
 		}
 	}

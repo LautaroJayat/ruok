@@ -1,10 +1,10 @@
 package job
 
 import (
-	"log"
 	"time"
 
 	"github.com/back-end-labs/ruok/pkg/cronParser"
+	"github.com/rs/zerolog/log"
 )
 
 type Doer interface {
@@ -89,7 +89,7 @@ func (j *Job) IsSuccess(x int) bool {
 func (j *Job) InitExpression(parsefn cronParser.ParseFn) error {
 	expr, err := parsefn(j.CronExpString)
 	if err != nil {
-		log.Println("error while parsing expresion: ", err)
+		log.Error().Err(err).Msgf("error while parsing expresion for job %v", j.Id)
 		return err
 	}
 	j.CronExp = expr
@@ -99,7 +99,7 @@ func (j *Job) InitExpression(parsefn cronParser.ParseFn) error {
 func (j *Job) Schedule(notifier chan int) string {
 	now := time.Now()
 	nextExecution := j.CronExp.Next(now)
-	log.Printf("next execution will be at: %q", nextExecution.String())
+	log.Info().Msgf("next execution of job %v will be at %q", j.Id, nextExecution.String())
 	timer := time.After(nextExecution.Sub(now))
 	select {
 	case <-j.AbortChannel:
