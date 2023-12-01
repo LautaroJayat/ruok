@@ -48,6 +48,23 @@ var defaultBaseDir string = "/app"
 var defaultSSLMode string = DISABLE_SSL
 var defaultSSLPass string = "clientpass"
 
+type Stats struct {
+	ClaimedJobs int
+	StartedAt   int64
+}
+
+func (s *Stats) Uptime() int64 {
+	return time.Now().UnixMicro() - s.StartedAt
+}
+
+func (s *Stats) CountClaimedJobs() int {
+	return s.ClaimedJobs
+}
+
+var AppStats *Stats = &Stats{
+	StartedAt: time.Now().UnixMicro(),
+}
+
 type Configs struct {
 	Kind         string
 	Protocol     string
@@ -60,6 +77,7 @@ type Configs struct {
 	AppName      string
 	MaxJobs      int
 	PollInterval time.Duration
+	StartedAt    int64
 }
 
 var globalConfigs *Configs = nil
@@ -67,7 +85,7 @@ var globalConfigs *Configs = nil
 func parseMaxJobs(cfg *Configs) {
 	maxJobs, err := strconv.ParseInt(os.Getenv(MAX_JOBS), 10, 64)
 	if err != nil {
-		log.Error().Err(err).Msgf("could not parse MAX_JOBS env defaulting to %s", defaultMaxJobs)
+		log.Error().Err(err).Msgf("could not parse MAX_JOBS env defaulting to %d", defaultMaxJobs)
 		globalConfigs.MaxJobs = defaultMaxJobs
 	} else {
 		globalConfigs.MaxJobs = int(maxJobs)
@@ -77,7 +95,7 @@ func parseMaxJobs(cfg *Configs) {
 func ParsePollInterval(cfg *Configs) {
 	interval, err := strconv.ParseInt(os.Getenv(POLL_INTERVAL_SECONDS), 10, 64)
 	if err != nil {
-		log.Error().Err(err).Msgf("could not parse POLLING_INTERVAL_SECONDS env defaulting to %d seconds", defaultPollInterval.Seconds())
+		log.Error().Err(err).Msgf("could not parse POLLING_INTERVAL_SECONDS env defaulting to %f seconds", defaultPollInterval.Seconds())
 		globalConfigs.PollInterval = defaultPollInterval
 	} else {
 		globalConfigs.PollInterval = time.Second * time.Duration(interval)
@@ -132,6 +150,7 @@ func getSSLConfigs() SSLConfig {
 	if !withinContainer(base) {
 		base = generateLocalBasePath()
 	}
+	log.Debug().Msg(base)
 	tlsConfigs.CACertPath = base + CA_CERT_FILE
 	tlsConfigs.SSLCertPath = base + CLIENT_CERT_FILE
 	tlsConfigs.SSLKeyPath = base + CLIENT_KEY_FILE

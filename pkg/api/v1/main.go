@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/back-end-labs/ruok/pkg/config"
 	"github.com/back-end-labs/ruok/pkg/storage"
 	"github.com/gin-gonic/gin"
 )
@@ -13,6 +14,7 @@ var offsetLabel string = "offset"
 var jobsLabel string = "jobs"
 var jobResultsLabel string = "jobResults"
 var jobIdLabel string = "jobId"
+var claimedJobsLabel string = "claimedJobs"
 
 func Status(c *gin.Context) {
 	c.String(200, "OK")
@@ -49,9 +51,10 @@ func ListJobs(s storage.APIStorage) gin.HandlerFunc {
 		jobslist := s.GetClaimedJobs(limit, offset)
 
 		c.JSON(200, gin.H{
-			limitLabel:  limit,
-			offsetLabel: offset,
-			jobsLabel:   jobslist,
+			claimedJobsLabel: config.AppStats.CountClaimedJobs(),
+			offsetLabel:      offset,
+			limitLabel:       limit,
+			jobsLabel:        jobslist,
 		})
 
 	}
@@ -106,5 +109,38 @@ func ListJobExections(s storage.APIStorage) gin.HandlerFunc {
 			jobResultsLabel: jobExecutionList,
 		})
 
+	}
+}
+
+type InstanceInfo struct {
+	AppName     string `json:"appName"`
+	DbConnected bool   `json:"dbConnected"`
+	DbUrl       string `json:"dbURL"`
+	TlsActive   bool   `json:"tlsActive"`
+	TlsVersion  string `json:"tlsVersion"`
+	ClaimedJobs int    `json:"claimedJobs"`
+	StartedAt   int64  `json:"startedAtMicro"`
+	UpTimeMicro int64  `json:"upTimeMicro"`
+	MaxJobs     int    `json:"maxJobs"`
+}
+
+func GetInstanceInfo(s storage.APIStorage) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		cfg := config.FromEnvs()
+		dbConnected := s.GetClient().Stat().TotalConns() > 0
+		tlsActive, tlsVersion := s.GetSSLVersion()
+		payload := &InstanceInfo{
+			cfg.AppName,
+			dbConnected,
+			fmt.Sprintf("%s://-:-@%s:%s/%s", cfg.Protocol, cfg.Host, cfg.Port, cfg.Dbname),
+			tlsActive,
+			tlsVersion,
+			config.AppStats.ClaimedJobs,
+			config.AppStats.StartedAt,
+			config.AppStats.Uptime(),
+			config.MaxJobs(),
+		}
+
+		c.JSON(200, &payload)
 	}
 }
