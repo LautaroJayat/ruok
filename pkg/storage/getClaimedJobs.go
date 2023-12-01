@@ -38,8 +38,10 @@ SELECT
 	last_status_code,
 	headers_string,
 	success_statuses
+	created_at
  FROM jobs 
  WHERE claimed_by = $1 
+ ORDER BY id ASC 
  LIMIT  $2
  OFFSET $3;
  `, config.AppName(), limit, offset)
@@ -65,6 +67,7 @@ SELECT
 		var LastStatusCode sql.NullInt32
 		var HeadersString sql.NullString
 		var SuccessStatuses []int
+		var CreatedAt int
 
 		err = rows.Scan(
 			&Id,
@@ -82,6 +85,7 @@ SELECT
 		)
 		if err != nil {
 			log.Error().Err(err).Msg("could not scan claimed jobs row")
+			continue
 		}
 
 		Headers := []job.Header{}
@@ -107,6 +111,7 @@ SELECT
 			SuccessStatuses: SuccessStatuses,
 			ClaimedBy:       config.AppName(),
 			Handlers:        job.Handlers{},
+			CreatedAt:       CreatedAt,
 		}
 
 		jobsList = append(jobsList, j)

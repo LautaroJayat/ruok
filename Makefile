@@ -26,6 +26,9 @@ test:
 	go test -p 1 -count=1 ./...
 
 run:
+	go run cmd/scheduler/main.go
+
+run-bin:
 	./main
 
 gen-ssl-conf:
@@ -43,6 +46,15 @@ gen-ssl-conf:
 	echo "hostnossl all all 0.0.0.0/0 reject" >> ssl/pg_hba.conf
 	echo "local postgres user trust" >> ssl/pg_hba.conf
 	sudo chown 70:70 ssl/server-key.pem
+
+start-front:
+	cd ruok-ui && npm run dev
+
+build-front:
+	rm -drf pkg/api/static
+	mkdir pkg/api/static
+	cd ruok-ui && npm run build
+	 
 
 clean:
 	rm -f ./main

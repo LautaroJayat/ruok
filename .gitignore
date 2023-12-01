@@ -3,3 +3,5 @@ main
 .env
 *.pem
 *.conf
+static-out
+static

@@ -62,6 +62,7 @@ func (sched *Scheduler) initJobList(j []*jobs.Job, notifier chan int) {
 		sched.l.list[job.Id] = job
 		go job.Schedule(notifier)
 	}
+	config.AppStats.ClaimedJobs = len(sched.l.list)
 }
 
 func (sched *Scheduler) checkForNewJobs(notifier chan int) {

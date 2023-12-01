@@ -29,6 +29,8 @@ type SchedulerStorage interface {
 type APIStorage interface {
 	GetClaimedJobs(limit int, offset int) []*job.Job
 	GetClaimedJobsExecutions(jobId int, limit int, offset int) []*job.JobExecution
+	GetClient() *pgxpool.Pool
+	GetSSLVersion() (bool, string)
 }
 
 type SQLStorage struct {
@@ -48,7 +50,7 @@ func (sqls *SQLStorage) RegisterSelf() {}
 // It connects to a db
 func NewStorage(cfg *config.Configs) (Storage, Closer) {
 	connStr := fmt.Sprintf(
-		"%s://%s:%s@%s:%s/%s?sslmode=%s",
+		"%s://%s:%s@%s:%s/%s?sslmode=%s&application_name=%s",
 		cfg.Kind,
 		cfg.User,
 		cfg.Pass,
@@ -56,6 +58,7 @@ func NewStorage(cfg *config.Configs) (Storage, Closer) {
 		cfg.Port,
 		cfg.Dbname,
 		cfg.SSLConfigs.SSLMode,
+		cfg.AppName,
 	)
 	if cfg.SSLConfigs.SSLMode != config.DISABLE_SSL {
 		connStr = fmt.Sprintf("%s&sslcert=%s&sslkey=%s&sslrootcert=%s&sslpassword=%s",
