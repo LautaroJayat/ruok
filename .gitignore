@@ -5,3 +5,4 @@ main
 *.conf
 static-out
 static
+dump.json
