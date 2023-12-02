@@ -14,7 +14,31 @@ func TestWriteDone(t *testing.T) {
 	Drop()
 	defer Drop()
 	t.Run("Done jobs are written as they should", func(t *testing.T) {
+		cfg := config.FromEnvs()
+		s, close := NewStorage(&cfg)
+		defer close()
+
+		ctx := context.Background()
+
+		_, err := s.GetClient().Exec(ctx, `
+		INSERT INTO jobs (
+			id,
+			cron_exp_string,
+			endpoint,
+			httpmethod,
+			max_retries,
+			success_statuses,
+			status,
+			claimed_by
+		) VALUES (1,'* * * * *', '/', 'GET', 1, '{200}',  'claimed','application1')
+		`)
+
+		if err != nil {
+			t.Errorf("couln't seed due to the following error: %q", err.Error())
+		}
+
 		now := time.Now()
+
 		j := job.Job{
 			Id:              1,
 			CronExpString:   "* * * * *",
@@ -24,21 +48,20 @@ func TestWriteDone(t *testing.T) {
 			Status:          "claimed",
 			ClaimedBy:       config.AppName(),
 			LastStatusCode:  200,
-			HttpMethod:      "POST",
+			LastMessage:     "OK",
+			HttpMethod:      "GET",
 			Endpoint:        "/",
 			SuccessStatuses: []int{200},
 			Headers:         []job.Header{},
 			MaxRetries:      1,
 		}
-		cfg := config.FromEnvs()
-		s, close := NewStorage(&cfg)
-		defer close()
 
-		err := s.WriteDone(&j)
+		err = s.WriteDone(&j)
+
 		if err != nil {
 			t.Errorf("wrriting a job result shouldn't error. error=%q\n", err.Error())
 		}
-		ctx := context.Background()
+		ctx = context.Background()
 
 		var (
 			id              int64
@@ -59,6 +82,7 @@ func TestWriteDone(t *testing.T) {
 
 		// Assuming jobId is the parameter to retrieve a specific job result.
 		row := s.GetClient().QueryRow(ctx, `
+		
 		SELECT 
 			id,
 			job_id,
@@ -127,7 +151,7 @@ func TestWriteDone(t *testing.T) {
 			t.Errorf("Expected LastResponseAt: %d, Got: %d", j.LastResponseAt.UnixMicro(), lastResponseAt)
 		}
 
-		if lastMessage.String != "" && lastMessage.String != j.LastMessage {
+		if lastMessage.String != j.LastMessage {
 			t.Errorf("Expected LastMessage: %s, Got: %s", j.LastMessage, lastMessage.String)
 		}
 
@@ -142,6 +166,63 @@ func TestWriteDone(t *testing.T) {
 		if claimedBy != j.ClaimedBy {
 			t.Errorf("Expected ClaimedBy: %s, Got: %s", j.ClaimedBy, claimedBy)
 		}
+
+		{
+
+			var executionTime int64
+			var shouldExecuteAt int64
+			var lastResponseAt int64
+			var lastMessage sql.NullString
+			var lastStatusCode int
+
+			ctx := context.Background()
+
+			row := s.GetClient().QueryRow(ctx, `
+			
+			SELECT
+				last_execution,
+				should_execute_at,
+				last_response_at,
+				last_message,
+				last_status_code
+			FROM jobs
+			WHERE id = $1
+			`, j.Id)
+
+			err := row.Scan(
+				&executionTime,
+				&shouldExecuteAt,
+				&lastResponseAt,
+				&lastMessage,
+				&lastStatusCode,
+			)
+
+			if err != nil {
+				t.Errorf("couldn't get job after updating it: %q", err.Error())
+			}
+
+			if executionTime != j.LastExecution.UnixMicro() {
+				t.Errorf("Expected ExecutionTime: %v, Got: %v", j.LastExecution.UnixMicro(), executionTime)
+			}
+
+			if shouldExecuteAt != j.ShouldExecuteAt.UnixMicro() {
+				t.Errorf("Expected ShouldExecuteAt: %v, Got: %v", j.ShouldExecuteAt.UnixMicro(), shouldExecuteAt)
+			}
+
+			if lastResponseAt != j.LastResponseAt.UnixMicro() {
+				t.Errorf("Expected LastResponseAt: %v, Got: %v", j.LastResponseAt.UnixMicro(), lastResponseAt)
+			}
+
+			if lastMessage.String != j.LastMessage {
+				t.Errorf("Expected LastMessage: %s, Got: %s", j.LastMessage, lastMessage.String)
+			}
+
+			if lastStatusCode != j.LastStatusCode {
+				t.Errorf("Expected LastStatusCode: %d, Got: %d", j.LastStatusCode, lastStatusCode)
+			}
+
+		}
+
 	})
 
 }

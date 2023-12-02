@@ -39,11 +39,32 @@ func (sqls *SQLStorage) WriteDone(j *job.Job) error {
 		j.ShouldExecuteAt.UnixMicro(), j.LastResponseAt.UnixMicro(), j.LastMessage, j.LastStatusCode,
 		j.SuccessStatuses, j.Status, j.ClaimedBy,
 	)
+
 	if err != nil {
 		log.Error().Err(err).Msg("could not insert into job_results")
 		return errors.New("could not insert into job_results")
 	}
 
+	_, err = tx.Exec(ctx, `
+	UPDATE jobs SET
+		last_execution = $1,
+		should_execute_at = $2,
+		last_response_at =$3,
+		last_message = $4,
+		last_status_code = $5
+	WHERE id = $6
+	`,
+		j.LastExecution.UnixMicro(),
+		j.ShouldExecuteAt.UnixMicro(),
+		j.LastResponseAt.UnixMicro(),
+		j.LastMessage,
+		j.LastStatusCode,
+		j.Id)
+
+	if err != nil {
+		log.Error().Err(err).Msg("could not update last execution fields for job")
+		return errors.New("could not insert into job_results")
+	}
 	err = tx.Commit(ctx)
 
 	if err != nil {
