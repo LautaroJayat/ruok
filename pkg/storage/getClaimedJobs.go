@@ -37,8 +37,9 @@ SELECT
 	last_message,
 	last_status_code,
 	headers_string,
-	success_statuses
-	created_at
+	success_statuses,
+	created_at,
+	succeeded
  FROM jobs 
  WHERE claimed_by = $1 
  ORDER BY id ASC 
@@ -68,6 +69,7 @@ SELECT
 		var HeadersString sql.NullString
 		var SuccessStatuses []int
 		var CreatedAt int
+		var Succeeded sql.NullString
 
 		err = rows.Scan(
 			&Id,
@@ -82,6 +84,7 @@ SELECT
 			&LastStatusCode,
 			&HeadersString,
 			&SuccessStatuses,
+			&Succeeded,
 		)
 		if err != nil {
 			log.Error().Err(err).Msg("could not scan claimed jobs row")
@@ -112,6 +115,7 @@ SELECT
 			ClaimedBy:       config.AppName(),
 			Handlers:        job.Handlers{},
 			CreatedAt:       CreatedAt,
+			Succeeded:       Succeeded.String,
 		}
 
 		jobsList = append(jobsList, j)

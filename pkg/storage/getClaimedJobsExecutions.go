@@ -38,7 +38,8 @@ SELECT
 	last_message,
 	last_status_code,
 	success_statuses,
-	created_at
+	created_at,
+	succeeded
  FROM job_results 
  WHERE claimed_by = $1 AND job_id = $2
  LIMIT  $3
@@ -67,6 +68,7 @@ SELECT
 		var LastStatusCode sql.NullInt32
 		var SuccessStatuses []int
 		var CreatedAt int
+		var Succeeded sql.NullString
 
 		err = rows.Scan(
 			&Id,
@@ -82,6 +84,7 @@ SELECT
 			&LastStatusCode,
 			&SuccessStatuses,
 			&CreatedAt,
+			&Succeeded,
 		)
 		if err != nil {
 			log.Error().Err(err).Msg("could not scan claimed job executions row")
@@ -101,6 +104,7 @@ SELECT
 			SuccessStatuses: SuccessStatuses,
 			ClaimedBy:       config.AppName(),
 			CreatedAt:       CreatedAt,
+			Succeeded:       Succeeded.String,
 		}
 
 		jobResultsList = append(jobResultsList, j)
