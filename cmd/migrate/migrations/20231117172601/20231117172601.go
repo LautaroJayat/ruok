@@ -31,6 +31,7 @@ func Migrate20231117172601(client storage.Storage) {
 		last_message varchar,
 		last_status_code int,
 		success_statuses int[],
+		succeeded text,
 		tls_client_cert varchar,
 		status varchar,
 		claimed_by varchar,

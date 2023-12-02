@@ -38,29 +38,29 @@ type Handlers struct {
 	OnSuccessFn func(*Job)
 }
 type Job struct {
-	CronExp         cronParser.CronExpresion
-	CronExpString   string    `json:"cronexp"`
-	LastExecution   time.Time `json:"lastExecution"`
-	ShouldExecuteAt time.Time `json:"shouldExecuteAt"`
-	LastResponseAt  time.Time `json:"lastResponseAt"`
-	LastMessage     string    `json:"lastMessage"`
-	LastStatusCode  int       `json:"lastStatusCode"`
-	Id              int       `json:"id"`
-	MaxRetries      int       `json:"maxRetries"`
-	Endpoint        string    `json:"endpoint"`
-	HttpMethod      string    `json:"httpmethod"`
-	Headers         []Header  `json:"headers"`
-	SuccessStatuses []int     `json:"successStatuses"`
-	Status          string    `json:"status"`
-	ClaimedBy       string    `json:"claimedBy"`
-	CreatedAt       int       `json:"createdAt"`
-	TLSClientCert   string
-	AbortChannel    chan struct{} `json:"-"`
-	Scheduled       bool          `json:"-"`
+	Id              int                      `json:"id"`
+	CronExp         cronParser.CronExpresion `json:"-"`
+	CronExpString   string                   `json:"cronexp"`
+	LastExecution   time.Time                `json:"lastExecution"`
+	ShouldExecuteAt time.Time                `json:"shouldExecuteAt"`
+	LastResponseAt  time.Time                `json:"lastResponseAt"`
+	LastMessage     string                   `json:"lastMessage"`
+	LastStatusCode  int                      `json:"lastStatusCode"`
+	MaxRetries      int                      `json:"maxRetries"`
+	Endpoint        string                   `json:"endpoint"`
+	HttpMethod      string                   `json:"httpmethod"`
+	Headers         []Header                 `json:"headers"`
+	SuccessStatuses []int                    `json:"successStatuses"`
+	Succeeded       string                   `json:"succeeded"`
+	Status          string                   `json:"status"`
+	ClaimedBy       string                   `json:"claimedBy"`
+	CreatedAt       int                      `json:"createdAt"`
+	TLSClientCert   string                   `json:"-"`
+	Scheduled       bool                     `json:"-"`
+	AbortChannel    chan struct{}            `json:"-"`
 
+	Doer     `json:"-"`
 	Handlers Handlers `json:"-"`
-
-	Doer
 }
 
 type JobExecution struct {
@@ -76,6 +76,7 @@ type JobExecution struct {
 	HttpMethod      string    `json:"httpmethod"`
 	Headers         []Header  `json:"headers"`
 	SuccessStatuses []int     `json:"successStatuses"`
+	Succeeded       string    `json:"succeeded"`
 	Status          string    `json:"status"`
 	ClaimedBy       string    `json:"claimedBy"`
 	CreatedAt       int       `json:"createdAt"`
@@ -111,10 +112,12 @@ func (j *Job) Schedule(notifier chan int) string {
 		j.LastExecution = executionTime
 		j.LastMessage = result.Message
 		j.LastStatusCode = result.Status
-
+		j.Succeeded = "error"
 		if j.IsSuccess(result.Status) {
+			j.Succeeded = "ok"
 			j.OnSuccess()
 		} else {
+			j.Succeeded = "error"
 			j.OnError()
 		}
 		notifier <- j.Id

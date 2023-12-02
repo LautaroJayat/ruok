@@ -28,6 +28,7 @@ func Migrate20231117133101(s storage.Storage) {
 		last_status_code int,
 		headers_string varchar,
 		success_statuses int[],
+		succeeded text,
 		tls_client_cert varchar,
 		status varchar,
 		claimed_by varchar,
