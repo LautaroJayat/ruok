@@ -84,6 +84,7 @@ SELECT
 			&LastStatusCode,
 			&HeadersString,
 			&SuccessStatuses,
+			&CreatedAt,
 			&Succeeded,
 		)
 		if err != nil {
