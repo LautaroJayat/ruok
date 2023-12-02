@@ -33,11 +33,12 @@ func (sqls *SQLStorage) WriteDone(j *job.Job) error {
 		last_status_code,
 		success_statuses,
 		status,
-		claimed_by
-	) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13);
+		claimed_by,
+		succeeded
+	) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14);
 	`, j.Id, j.CronExpString, j.Endpoint, j.HttpMethod, j.MaxRetries, j.LastExecution.UnixMicro(),
 		j.ShouldExecuteAt.UnixMicro(), j.LastResponseAt.UnixMicro(), j.LastMessage, j.LastStatusCode,
-		j.SuccessStatuses, j.Status, j.ClaimedBy,
+		j.SuccessStatuses, j.Status, j.ClaimedBy, j.Succeeded,
 	)
 
 	if err != nil {
@@ -51,14 +52,16 @@ func (sqls *SQLStorage) WriteDone(j *job.Job) error {
 		should_execute_at = $2,
 		last_response_at =$3,
 		last_message = $4,
-		last_status_code = $5
-	WHERE id = $6
+		last_status_code = $5,
+		succeeded = $6
+	WHERE id = $7
 	`,
 		j.LastExecution.UnixMicro(),
 		j.ShouldExecuteAt.UnixMicro(),
 		j.LastResponseAt.UnixMicro(),
 		j.LastMessage,
 		j.LastStatusCode,
+		j.Succeeded,
 		j.Id)
 
 	if err != nil {
