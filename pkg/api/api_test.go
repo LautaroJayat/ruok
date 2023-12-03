@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
@@ -127,7 +128,7 @@ func TestGetInstanceInfo(t *testing.T) {
 	var expectedTLSVersion []string
 
 	if expectedTLSActive {
-		expectedTLSVersion = []string{"tlsv1.2", "tlsv1.2", "tlsv1.1"}
+		expectedTLSVersion = []string{"tlsv1.3", "tlsv1.2", "tlsv1.1"}
 	} else {
 		expectedTLSVersion = []string{""}
 
@@ -157,7 +158,7 @@ func TestGetInstanceInfo(t *testing.T) {
 	assert.Equal(t, true, instanceInfo.DbConnected)
 	assert.Equal(t, "postgresql://-:-@localhost:5432/db1", instanceInfo.DbUrl)
 	assert.Equal(t, expectedTLSActive, instanceInfo.TlsActive)
-	assert.Contains(t, expectedTLSVersion, instanceInfo.TlsVersion)
+	assert.Contains(t, expectedTLSVersion, strings.ToLower(instanceInfo.TlsVersion))
 	assert.Equal(t, 10, instanceInfo.ClaimedJobs)
 	assert.Equal(t, currentTime.UnixMicro(), instanceInfo.StartedAt)
 	assert.True(t, instanceInfo.UpTimeMicro > 0) // Just ensure it's positive
