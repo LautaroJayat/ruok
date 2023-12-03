@@ -10,7 +10,7 @@ import (
 	"github.com/back-end-labs/ruok/pkg/job"
 )
 
-var seedWriteDoneQuery = `
+var seedOneJobQuery = `
 INSERT INTO jobs (
 	id,
 	cron_exp_string,
@@ -82,7 +82,7 @@ func TestWriteDone(t *testing.T) {
 
 		ctx := context.Background()
 
-		_, err := s.GetClient().Exec(ctx, seedWriteDoneQuery)
+		_, err := s.GetClient().Exec(ctx, seedOneJobQuery)
 
 		if err != nil {
 			t.Errorf("couln't seed due to the following error: %q", err.Error())

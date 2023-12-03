@@ -16,16 +16,13 @@ import (
 func (sqls *SQLStorage) GetAvailableJobs(limit int) []*job.Job {
 	ctx := context.Background()
 	tx, err := sqls.Db.Begin(ctx)
-
 	if err != nil {
 		log.Error().Err(err).Msg("could not start transaction to get available jobs")
 		return nil
 	}
-
 	defer tx.Rollback(ctx)
-
 	rows, err := tx.Query(ctx, `
-SELECT 
+SELECT
 	id,
 	cron_exp_string,
 	endpoint,
@@ -42,6 +39,7 @@ SELECT
 	created_at
  FROM jobs 
  WHERE status = 'pending to be claimed' 
+ FOR UPDATE SKIP LOCKED
  LIMIT  $1;`, limit)
 
 	if err != nil {

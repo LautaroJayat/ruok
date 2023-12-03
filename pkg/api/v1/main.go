@@ -124,10 +124,15 @@ type InstanceInfo struct {
 	MaxJobs     int    `json:"maxJobs"`
 }
 
-func GetInstanceInfo(s storage.APIStorage) gin.HandlerFunc {
+type apiStatsStorage interface {
+	GetSSLVersion() (bool, string)
+	Connected() bool
+}
+
+func GetInstanceInfo(s apiStatsStorage) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		cfg := config.FromEnvs()
-		dbConnected := s.GetClient().Stat().TotalConns() > 0
+		dbConnected := s.Connected()
 		tlsActive, tlsVersion := s.GetSSLVersion()
 		payload := &InstanceInfo{
 			cfg.AppName,

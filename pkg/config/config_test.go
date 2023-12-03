@@ -181,3 +181,54 @@ func TestFromEnvs(t *testing.T) {
 		t.Errorf("Expected PollInterval to be %s, but got '%s'", defaultPollInterval, config.PollInterval)
 	}
 }
+
+func TestIsInvalidAppName(t *testing.T) {
+	testCases := []struct {
+		name    string
+		invalid bool
+	}{
+		{"validAppName", false},
+		{"invalid@AppName", true},
+		{"invalid App Name", true},
+		{"", true},
+		{"valid_App_Name_123", false},
+		{"normalName123", false},
+		{"nameWithSpaces 123", true},
+		{"name_With_Underscores", false},
+		{"name-With-Hyphens", true},
+		{"name%With%Special%Characters", true},
+		{"nameWithSingleQuote'", true},
+		{"nameWithDoubleQuote\"", true},
+		{"nameWithBacktick`", true},
+		{"nameWithParenthesis(", true},
+		{"nameWithParenthesis)", true},
+		{"nameWithAmpersand&", true},
+		{"nameWithEquals=", true},
+		{"nameWithSemicolon;", true},
+		{"'; DROP TABLE users; --", true},
+		{"OR 1=1 --", true},
+		{"UNION SELECT * FROM users --", true},
+		{"' OR 'a'='a' --", true},
+		{"\" OR \"a\"=\"a\" --", true},
+		{"` OR `a`=`a` --", true},
+		{"; DROP TABLE users; --", true},
+		{"'; SHUTDOWN --", true},
+		{"\"; SHUTDOWN --", true},
+		{"'; SELECT * FROM users; --", true},
+		{"' UNION SELECT password FROM users; --", true},
+		{"'; EXEC xp_cmdshell('ls'); --", true},
+		{"'; EXEC xp_cmdshell('cat /etc/passwd'); --", true},
+		{"'; EXEC master..xp_cmdshell('ls'); --", true},
+		{"'; EXEC('DROP TABLE users'); --", true},
+		{"' OR 1=1; DROP TABLE users; --", true},
+		{"' OR 'a'='a'; DROP TABLE users; --", true},
+		{"'; UPDATE users SET password='hacked'; --", true},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			isInvalid := isInvalidAppName(tc.name)
+			assert.Equal(t, tc.invalid, isInvalid, "Unexpected result for app name: %s", tc.name)
+		})
+	}
+}

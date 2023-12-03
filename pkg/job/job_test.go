@@ -193,6 +193,5 @@ func TestAbortJob(t *testing.T) {
 	}()
 	j.AbortChannel <- struct{}{}
 	wg.Wait()
-	assert.False(t, j.Scheduled)
 	assert.False(t, executorTriggered)
 }

@@ -30,7 +30,6 @@ func CreateRouter(apiStorage storage.APIStorage) *gin.Engine {
 	_, currentFile, _, _ := runtime.Caller(0)
 	r.StaticFile("/", path.Dir(currentFile)+"/static/index.html")
 	r.Static("/assets", path.Dir(currentFile)+"/static/assets")
-
 	apiV1 := r.Group("/v1")
 	{
 		apiV1.Use(CORSMiddleware())
