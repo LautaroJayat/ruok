@@ -32,13 +32,17 @@ func main() {
 
 	s, close := storage.NewStorage(&cfg)
 	defer close()
+
 	jobsList := scheduler.NewJobList(int(cfg.MaxJobs))
+
 	signalCh := make(chan os.Signal, 4)
 	signal.Notify(signalCh, os.Interrupt, syscall.SIGTERM /*syscall.SIGHUP*/)
 	srv := &http.Server{
+
 		Addr:    ":8080",
 		Handler: api.CreateRouter(s),
 	}
+
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Error().Err(err).Msg("error while HTTP server was listening")
@@ -46,17 +50,18 @@ func main() {
 	}()
 
 	exitStatus := scheduler.NewScheduler(s, jobsList).Start(signalCh)
-	log.Info().Msg("Shutting down server")
-
+	log.Info().Msgf("scheduler returned with exit code of %d", exitStatus)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	if err := srv.Shutdown(ctx); err != nil {
+	log.Info().Msg("Shutting down server")
+	err := srv.Shutdown(ctx)
+	if err != nil {
 		log.Error().Err(err).Msg("Server Shutdown error")
 		exitStatus = 1
 	}
 	<-ctx.Done()
 	log.Info().Msg("timeout of 5 seconds.")
-	log.Info().Msg("Server exiting")
+	log.Info().Msgf("Server exiting with status %d", exitStatus)
 	os.Exit(exitStatus)
 }

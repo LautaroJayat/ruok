@@ -5,7 +5,9 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
+	v1 "github.com/back-end-labs/ruok/pkg/api/v1"
 	"github.com/back-end-labs/ruok/pkg/config"
 	"github.com/back-end-labs/ruok/pkg/job"
 	"github.com/back-end-labs/ruok/pkg/storage"
@@ -99,7 +101,6 @@ func TestClaimedJobs_OKQueries(t *testing.T) {
 
 func TestClaimedJobExecutions_BadParams(t *testing.T) {
 	router := CreateRouter(nil)
-
 	queries := []string{
 		"offset=a1",
 		"limit=a1",
@@ -114,4 +115,51 @@ func TestClaimedJobExecutions_BadParams(t *testing.T) {
 		router.ServeHTTP(rr, req)
 		assert.Equal(t, 400, rr.Code)
 	}
+}
+
+func TestGetInstanceInfo(t *testing.T) {
+	// Create a mock storage instance
+
+	cfg := config.FromEnvs()
+
+	expectedTLSActive := cfg.SSLConfigs.SSLMode == config.REQUIRE_SSL
+
+	var expectedTLSVersion []string
+
+	if expectedTLSActive {
+		expectedTLSVersion = []string{"tlsv1.2", "tlsv1.2", "tlsv1.1"}
+	} else {
+		expectedTLSVersion = []string{""}
+
+	}
+
+	s, closeDb := storage.NewStorage(&cfg)
+	defer closeDb()
+
+	currentTime := time.Now()
+	config.AppStats = &config.Stats{
+		ClaimedJobs: 10,
+		StartedAt:   currentTime.UnixMicro(),
+	}
+	router := CreateRouter(s)
+
+	rr := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/v1/instance", nil)
+	router.ServeHTTP(rr, req)
+
+	assert.Equal(t, 200, rr.Code)
+
+	instanceInfo := &v1.InstanceInfo{}
+	err := json.Unmarshal(rr.Body.Bytes(), &instanceInfo)
+	t.Log(s.GetClient().Stat().TotalConns() > 0)
+	assert.NoError(t, err, "Error unmarshaling JSON")
+	assert.Equal(t, "application1", instanceInfo.AppName)
+	assert.Equal(t, true, instanceInfo.DbConnected)
+	assert.Equal(t, "postgresql://-:-@localhost:5432/db1", instanceInfo.DbUrl)
+	assert.Equal(t, expectedTLSActive, instanceInfo.TlsActive)
+	assert.Contains(t, expectedTLSVersion, instanceInfo.TlsVersion)
+	assert.Equal(t, 10, instanceInfo.ClaimedJobs)
+	assert.Equal(t, currentTime.UnixMicro(), instanceInfo.StartedAt)
+	assert.True(t, instanceInfo.UpTimeMicro > 0) // Just ensure it's positive
+	assert.Equal(t, 10000, instanceInfo.MaxJobs)
 }

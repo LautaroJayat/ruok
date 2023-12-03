@@ -19,6 +19,9 @@ type Storage interface {
 }
 
 type SchedulerStorage interface {
+	ListenForChanges(ch chan int, ctx context.Context)
+	StopListeningForChanges() error
+	GetJobUpdates(jobId int) *JobUpdates
 	GetAvailableJobs(limit int) []*job.Job
 	WriteDone(*job.Job) error
 	RegisterSelf()
@@ -29,7 +32,7 @@ type SchedulerStorage interface {
 type APIStorage interface {
 	GetClaimedJobs(limit int, offset int) []*job.Job
 	GetClaimedJobsExecutions(jobId int, limit int, offset int) []*job.JobExecution
-	GetClient() *pgxpool.Pool
+	Connected() bool
 	GetSSLVersion() (bool, string)
 }
 
@@ -42,6 +45,10 @@ type Closer func()
 // Returns the raw client
 func (sqls *SQLStorage) GetClient() *pgxpool.Pool {
 	return sqls.Db
+}
+
+func (sqls *SQLStorage) Connected() bool {
+	return sqls.Db.Ping(context.Background()) == nil
 }
 
 // Should register the url, name of the application and so on in the db

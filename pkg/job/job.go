@@ -104,8 +104,8 @@ func (j *Job) Schedule(notifier chan int) string {
 	timer := time.After(nextExecution.Sub(now))
 	select {
 	case <-j.AbortChannel:
-		j.Scheduled = false
 		return "aborted"
+
 	case executionTime := <-timer:
 		result := j.Execute()
 		j.LastResponseAt = result.ResponseTime
@@ -122,6 +122,7 @@ func (j *Job) Schedule(notifier chan int) string {
 		}
 		notifier <- j.Id
 	}
+
 	return "re-schedule"
 
 }

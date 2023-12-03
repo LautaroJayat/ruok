@@ -1,13 +1,18 @@
 package scheduler
 
 import (
+	"context"
+	"database/sql"
 	"encoding/json"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/back-end-labs/ruok/pkg/config"
 	"github.com/back-end-labs/ruok/pkg/job"
+	"github.com/back-end-labs/ruok/pkg/storage"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -66,13 +71,21 @@ func TestScheduler_DumpToFile(t *testing.T) {
 	}
 }
 
-// Mock implementation of the Storage interface for testing
-type mockStorage struct{}
+type mockStorage struct {
+	JobUpdatesCh chan int
+}
+
+func NewMockStorage() *mockStorage {
+	return &mockStorage{
+		JobUpdatesCh: make(chan int, 1),
+	}
+}
 
 var mockedJobList *JobsList
+var gotAvailableJobs = false
 
 func (ms *mockStorage) GetAvailableJobs(space int) []*job.Job {
-	// Mock implementation, returns an empty list for simplicity
+	gotAvailableJobs = true
 	return []*job.Job{
 		{Id: 1, CronExpString: "10 * * * *"},
 		{Id: 2, CronExpString: "10 * * * *"},
@@ -95,12 +108,10 @@ func (ms *mockStorage) ReleaseAll(jobs []*job.Job) error {
 }
 
 func (ms *mockStorage) GetClient() *pgxpool.Pool {
-	// Mock implementation, does nothing for simplicity
 	return nil
 }
 
 func (ms *mockStorage) RegisterSelf() {
-	// Mock implementation, does nothing for simplicity
 
 }
 
@@ -115,23 +126,83 @@ func (ms *mockStorage) GetClaimedJobs(limit int, offset int) []*job.Job {
 func (ms *mockStorage) GetClaimedJobsExecutions(jobId int, limit int, offset int) []*job.JobExecution {
 	return nil
 }
+func (ms *mockStorage) ListenForChanges(jobIDUpdatedCh chan int, ctx context.Context) {
+	// Simulate sending updates to the provided channel
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				log.Info().Msg("done listening for notifications")
+				return
+			case jobID := <-ms.JobUpdatesCh:
+				jobIDUpdatedCh <- jobID
+			}
+		}
+	}()
+}
+
+func (ms *mockStorage) GetJobUpdates(jobId int) *storage.JobUpdates {
+	return &storage.JobUpdates{
+		Cron_exp_string:  "*/5 * * * *",
+		Endpoint:         "/updated",
+		Httpmethod:       "PUT",
+		Max_retries:      2,
+		Headers_string:   sql.NullString{String: `{"Content-Type": "application/json"}`, Valid: true},
+		Success_statuses: []int{200, 201},
+		Tls_client_cert:  sql.NullString{String: "updated_cert", Valid: true},
+		Updated_at:       time.Now().Unix(),
+	}
+}
+
+func (ms *mockStorage) StopListeningForChanges() error {
+	return nil
+}
 
 func TestScheduler_Start(t *testing.T) {
 	releasedJobs = []*job.Job{}
 	mockedJobList = NewJobList(config.MaxJobs())
-	sched := NewScheduler(&mockStorage{}, mockedJobList)
+	mockedStorage := &mockStorage{
+		JobUpdatesCh: make(chan int, 1),
+	}
 
+	sched := NewScheduler(mockedStorage, mockedJobList)
 	exitCodeCh := make(chan int, 1)
 	signalCh := make(chan os.Signal, 1)
+
 	go func() {
 		exitCode := sched.Start(signalCh)
 		exitCodeCh <- exitCode
 	}()
 
+	for !gotAvailableJobs {
+		time.Sleep(time.Millisecond * 10)
+	}
+	sched.l.lock.Lock()
 	for _, j := range sched.l.list {
-		t.Log(j.Id, "scheduled?", j.Scheduled)
 		assert.True(t, j.Scheduled)
 	}
+
+	j := sched.l.list[1]
+	oldJob := *j
+	sched.l.lock.Unlock()
+
+	updatedJobID := 1
+	mockedStorage.JobUpdatesCh <- updatedJobID
+	time.Sleep(10 * time.Millisecond)
+
+	sched.l.lock.Lock()
+	j, ok := sched.l.list[1]
+	updatedJob := *j
+	sched.l.lock.Unlock()
+
+	assert.True(t, ok, "Refreshed job should exist in the mocked list")
+	assert.True(t, updatedJob.Scheduled, "Refreshed job should not be scheduled after stopping")
+	assert.NotEqual(t, oldJob.CronExpString, updatedJob.CronExpString, "Unexpected CronExpString")
+	assert.NotEqual(t, oldJob.Endpoint, updatedJob.Endpoint, "Unexpected Endpoint")
+	assert.NotEqual(t, oldJob.HttpMethod, updatedJob.HttpMethod, "Unexpected HttpMethod")
+	assert.NotEqual(t, oldJob.MaxRetries, updatedJob.MaxRetries, "Unexpected MaxRetries")
+	assert.NotEqual(t, oldJob.SuccessStatuses, updatedJob.SuccessStatuses, "Unexpected SuccessStatuses")
+
 	signalCh <- os.Interrupt
 	exitCode := <-exitCodeCh
 

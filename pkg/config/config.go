@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 	"path"
+	"regexp"
 	"runtime"
 	"strconv"
 	"time"
@@ -159,6 +160,31 @@ func getSSLConfigs() SSLConfig {
 	return tlsConfigs
 }
 
+// Returns TRUE if name is invalid, FALSE if valid.
+// Because only letters, numbers and low dashes are allowed
+func isInvalidAppName(s string) bool {
+	if s == "" {
+		return true
+	}
+	invalid, err := regexp.MatchString(`[^\w|_]`, s)
+	if err != nil {
+		log.Error().Err(err).Msgf("could not validate app name %q", s)
+		return true
+	}
+	return invalid
+}
+
+func validateAppNameOrFail() string {
+	appName := getEnvOrDefault(APP_NAME, defaultAppName)
+	if isInvalidAppName(appName) {
+		log.Fatal().Msgf(
+			"Cant continue. Invalid app name. Only letters, numbers and '_' are allowed. Submitted application name was: %q",
+			appName,
+		)
+	}
+	return appName
+}
+
 func FromEnvs() Configs {
 	if globalConfigs == nil {
 		globalConfigs = &Configs{
@@ -169,7 +195,7 @@ func FromEnvs() Configs {
 			Host:         getEnvOrDefault(DB_HOST, defaultHost),
 			Port:         getEnvOrDefault(DB_PORT, defaultPort),
 			Dbname:       getEnvOrDefault(DB_NAME, defaultDbname),
-			AppName:      getEnvOrDefault(APP_NAME, defaultAppName),
+			AppName:      validateAppNameOrFail(),
 			SSLConfigs:   getSSLConfigs(),
 			MaxJobs:      defaultMaxJobs,
 			PollInterval: defaultPollInterval,
