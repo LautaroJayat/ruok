@@ -3,31 +3,31 @@
 RUOK Scheduler is an open-source tool designed for hassle-free service monitoring. Keep a close eye on your infrastructure effortlessly with our intuitive scheduler.
 
 - [RUOK Scheduler](#ruok-scheduler)
-  - [Introduction](#introduction)
-    - [Purpose](#purpose)
-    - [Why RUOK Scheduler?](#why-ruok-scheduler)
-  - [Getting Started](#getting-started)
-    - [Building from Source](#building-from-source)
-    - [Starting RUOK Scheduler](#starting-ruok-scheduler)
-    - [Preparing the Database](#preparing-the-database)
-    - [Configurations](#configurations)
-    - [Job Configuration](#job-configuration)
-    - [Cron Specification](#cron-specification)
-  - [License](#license)
+  - [1. Introduction](#1. Introduction)
+    - [1.1 Purpose](#purpose)
+    - [1.2 Why RUOK Scheduler?](#why-ruok-scheduler)
+  - [2. Getting Started](#getting-started)
+    - [2.1 Building from Source](#building-from-source)
+    - [2.2 Starting RUOK Scheduler](#starting-ruok-scheduler)
+    - [2.3 Preparing the Database](#preparing-the-database)
+    - [2.4 Configurations](#configurations)
+    - [2.5 Job Configuration](#job-configuration)
+    - [2.6 Cron Specification](#cron-specification)
+  - [3. License](#license)
 
-## Introduction
+## 1. Introduction
 
-### Purpose
+### 1.1 Purpose
 
 RUOK Scheduler serves the purpose of transforming a PostgreSQL database into a reliable and efficient broker for a backend service monitoring system. It simplifies the process of scheduling and monitoring services, offering a straightforward solution for scenarios where complex deployments are unnecessary.
 
-### Why RUOK Scheduler?
+### 1.2 Why RUOK Scheduler?
 
 In many cases, deploying and managing monitoring systems can be complex and resource-intensive. RUOK Scheduler aims to address this challenge by providing a simple, yet effective, solution for users who prioritize ease of use and minimal configuration overhead.
 
-## Getting Started
+## 2. Getting Started
 
-### Building from Source
+### 2.1 Building from Source
 
 To build RUOK Scheduler from source, use the following command:
 
@@ -35,7 +35,7 @@ To build RUOK Scheduler from source, use the following command:
 make build
 ```
 
-### Starting RUOK Scheduler
+### 2.2 Starting RUOK Scheduler
 
 After building, run the scheduler using:
 
@@ -43,7 +43,7 @@ After building, run the scheduler using:
 ./ruok
 ```
 
-### Preparing the Database
+### 2.3 Preparing the Database
 
 Before running the scheduler, migrate the database with:
 
@@ -53,7 +53,7 @@ Before running the scheduler, migrate the database with:
 
 This command sets up the necessary schema for tables and functions in the PostgreSQL database.
 
-### Configurations
+### 2.4 Configurations
 
 All configurations for RUOK Scheduler are expected as environment variables. Below are the configurations along with their respective environment variables:
 
@@ -72,7 +72,7 @@ POLL_INTERVAL_SECONDS  # Polling interval in seconds (default: 60)
 MAX_JOBS               # Maximum number of jobs (default: 10000)
 ```
 
-### Job Configuration
+### 2.5 Job Configuration
 
 Jobs in RUOK Scheduler require specific configurations. Each job should have the following parameters:
 
@@ -84,11 +84,11 @@ successStatuses: An array of HTTP status codes indicating a successful response
 cronexp: A cron expression specifying the job schedule
 ```
 
-### Cron Specification
+### 2.6 Cron Specification
 
 RUOK Scheduler uses the [cron expression specification outlined in Wikipedia's CRON expression](https://en.wikipedia.org/wiki/Cron#CRON_expression). Behind the scenes, it leverages the [gorhill/cronexpr package](https://github.com/gorhill/cronexpr) for cron expression handling.
 
-## License
+## 3. License
 
 This software is released under the APACHE v2.0. For more details, refer to the source code and documentation.
 
