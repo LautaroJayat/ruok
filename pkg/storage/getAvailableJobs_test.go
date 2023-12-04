@@ -31,7 +31,7 @@ func TestGetJobsQuery(t *testing.T) {
 		if err != nil {
 			t.Errorf("couldn't start transaction for testing. error=%q", err)
 		}
-		rows, err := tx.Query(ctx, "select claimed_by, status, created_at from jobs")
+		rows, err := tx.Query(ctx, "select claimed_by, status, created_at from ruok.jobs")
 
 		if err != nil {
 			t.Errorf("couldn't exec transaction for testing. error=%q", err)

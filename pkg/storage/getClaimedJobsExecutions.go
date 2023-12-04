@@ -40,7 +40,7 @@ SELECT
 	success_statuses,
 	created_at,
 	succeeded
- FROM job_results 
+ FROM ruok.job_results 
  WHERE claimed_by = $1 AND job_id = $2
  LIMIT  $3
  OFFSET $4;

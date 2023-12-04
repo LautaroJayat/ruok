@@ -37,7 +37,7 @@ SELECT
 	success_statuses,
 	tls_client_cert,
 	created_at
- FROM jobs 
+ FROM ruok.jobs 
  WHERE status = 'pending to be claimed' 
  FOR UPDATE SKIP LOCKED
  LIMIT  $1;`, limit)
@@ -133,14 +133,14 @@ SELECT
 		if jobsList[i].Status == "claimed" {
 			_, err = tx.Exec(
 				ctx,
-				"UPDATE jobs SET claimed_by = $1, status = 'claimed' WHERE id = $2",
+				"UPDATE ruok.jobs SET claimed_by = $1, status = 'claimed' WHERE id = $2",
 				jobsList[i].ClaimedBy,
 				jobsList[i].Id,
 			)
 		} else {
 			_, err = tx.Exec(
 				ctx,
-				"UPDATE jobs SET claimed_by = NULL, status = $1 WHERE id = $2",
+				"UPDATE ruok.jobs SET claimed_by = NULL, status = $1 WHERE id = $2",
 				jobsList[i].Status,
 				jobsList[i].Id,
 			)
