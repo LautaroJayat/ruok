@@ -90,7 +90,7 @@ RUOK Scheduler uses the [cron expression specification outlined in Wikipedia's C
 
 ## 3. License
 
-This software is released under the APACHE v2.0. For more details, refer to the source code and documentation.
+This software is released under [Apache License 2.0](./LICENSE.md). For more details, refer to the source code and documentation.
 
 Feel free to explore the source code and adapt RUOK Scheduler to meet your specific monitoring needs. If you encounter any issues or have suggestions for improvement, please contribute to the project. Happy monitoring!
 
