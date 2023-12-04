@@ -1,4 +1,4 @@
-package main
+package migrations
 
 import (
 	"context"
@@ -8,6 +8,7 @@ import (
 
 	"github.com/back-end-labs/ruok/pkg/config"
 	"github.com/back-end-labs/ruok/pkg/storage"
+	"github.com/spf13/cobra"
 )
 
 type migration struct {
@@ -41,7 +42,7 @@ func migrationList() []migration {
 	return migrations
 }
 
-func main() {
+func migrate() {
 	log.Println("Starting Migration Process")
 	cfg := config.FromEnvs()
 	s, close := storage.NewStorage(&cfg)
@@ -70,4 +71,18 @@ func main() {
 		log.Fatalf("couldn't commit transaction to generate db. error %q.\n", err.Error())
 	}
 
+}
+
+var SetupDB = &cobra.Command{
+	Use:   "setupdb",
+	Short: "Runs all migrations needed to setup postgres to work with ruok",
+	Long: `Runs all migrations needed to setup postgres to work with ruok. It will create:
+  * the ruok schema
+  * some utility funcions
+  * all tables needed
+  * couple roles 
+`,
+	Run: func(cmd *cobra.Command, args []string) {
+		migrate()
+	},
 }

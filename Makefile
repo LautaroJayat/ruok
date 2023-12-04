@@ -2,13 +2,13 @@ include .env
 export $(shell sed 's/=.*//' .env)
 
 migrate:
-	go run cmd/migrate/main.go
+	go run cmd/main.go migrate
 
 seed:
 	go run cmd/seed/main.go
 
 build:
-	go build cmd/scheduler/main.go
+	go build cmd/main.go
 
 start-db:
 	docker compose -f Dockercompose.dev.yml up --build
@@ -26,10 +26,10 @@ test:
 	go test -p 1 -count=1 ./...
 
 run:
-	go run cmd/scheduler/main.go
+	go run cmd/main.go start
 
 run-bin:
-	./main
+	./main start
 
 gen-ssl-conf:
 	rm -f ssl/*.pem
