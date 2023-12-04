@@ -85,7 +85,7 @@ func TestWriteDone(t *testing.T) {
 		_, err := s.GetClient().Exec(ctx, seedOneJobQuery)
 
 		if err != nil {
-			t.Errorf("couln't seed due to the following error: %q", err.Error())
+			t.Errorf("couldn't seed due to the following error: %q", err.Error())
 		}
 
 		now := time.Now()
@@ -95,7 +95,7 @@ func TestWriteDone(t *testing.T) {
 		err = s.WriteDone(&j)
 
 		if err != nil {
-			t.Errorf("wrriting a job result shouldn't error. error=%q\n", err.Error())
+			t.Errorf("writing a job result shouldn't error. error=%q\n", err.Error())
 		}
 
 		// Clousure for job_execution asserts

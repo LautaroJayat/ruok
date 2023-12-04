@@ -53,7 +53,7 @@ func TestGetJobsQuery(t *testing.T) {
 				break
 			}
 			if createdAt == 0 {
-				t.Errorf("expected positive created_at colulmn, got %d", createdAt)
+				t.Errorf("expected positive created_at column, got %d", createdAt)
 			}
 		}
 		tx.Commit(ctx)

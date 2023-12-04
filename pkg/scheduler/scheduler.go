@@ -61,7 +61,7 @@ func (sched *Scheduler) initJobList(j []*jobs.Job, notifier chan int) {
 		job.AbortChannel = make(chan struct{})
 		job.Handlers.ExecuteFn = jobhandler.HTTPExecutor
 		job.Handlers.OnSuccessFn = jobhandler.OnSuccessHandler(sched.storage)
-		job.Handlers.OnErrorFn = jobhandler.OnErrorHanler(sched.storage)
+		job.Handlers.OnErrorFn = jobhandler.OnErrorHandler(sched.storage)
 		sched.l.list[job.Id] = job
 		go job.Schedule(notifier)
 		job.Scheduled = true
@@ -149,7 +149,7 @@ func (sched *Scheduler) Start(signalsCh chan os.Signal) int {
 			sched.reschedule(doneJobId)
 
 		case updatedJobId := <-updatedJobsNotificationsch:
-			log.Info().Msgf("receibed signal to re-schedule job %d", updatedJobId)
+			log.Info().Msgf("received signal to re-schedule job %d", updatedJobId)
 			sched.refreshJob(updatedJobId)
 
 		case <-signalsCh:
@@ -205,7 +205,7 @@ func (sched *Scheduler) reschedule(doneJobId int) {
 	log.Info().Msgf("job %v done!", doneJobId)
 	job, ok := sched.l.list[doneJobId]
 	if !ok {
-		log.Error().Msgf("jodb %v marked as done but can't reschedule because it is not on our job list", doneJobId)
+		log.Error().Msgf("jod %v marked as done but can't reschedule because it is not on our job list", doneJobId)
 		return
 	}
 	log.Info().Msgf("rescheduling job %v", doneJobId)

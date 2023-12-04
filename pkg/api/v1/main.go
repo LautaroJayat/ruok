@@ -60,7 +60,7 @@ func ListJobs(s storage.APIStorage) gin.HandlerFunc {
 	}
 }
 
-func ListJobExections(s storage.APIStorage) gin.HandlerFunc {
+func ListJobExecutions(s storage.APIStorage) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		limitQ := c.DefaultQuery(limitLabel, "10")
 		offsetQ := c.DefaultQuery(offsetLabel, "0")
