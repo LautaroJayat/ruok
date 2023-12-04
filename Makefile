@@ -8,7 +8,7 @@ seed:
 	go run cmd/seed/main.go
 
 build:
-	go build cmd/main.go
+	go build -o ./ruok cmd/main.go
 
 start-db:
 	docker compose -f Dockercompose.dev.yml up --build
