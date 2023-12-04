@@ -29,7 +29,7 @@ run:
 	go run cmd/main.go start
 
 run-bin:
-	./main start
+	./ruok start
 
 gen-ssl-conf:
 	rm -f ssl/*.pem
