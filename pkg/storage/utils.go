@@ -8,7 +8,7 @@ import (
 )
 
 var seedQuery string = `
-INSERT INTO jobs (
+INSERT INTO ruok.jobs (
     cron_exp_string,
     endpoint,
     httpmethod,
@@ -49,8 +49,8 @@ func Seed() {
 	}
 }
 
-var dropJobsQuery string = "delete from jobs"
-var dropJobResultsQuery string = "delete from job_results"
+var dropJobsQuery string = "delete from ruok.jobs"
+var dropJobResultsQuery string = "delete from ruok.job_results"
 
 func Drop() {
 	cfg := config.FromEnvs()

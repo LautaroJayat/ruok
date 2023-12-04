@@ -40,7 +40,7 @@ SELECT
 	success_statuses,
 	created_at,
 	succeeded
- FROM jobs 
+ FROM ruok.jobs 
  WHERE claimed_by = $1 
  ORDER BY id ASC 
  LIMIT  $2

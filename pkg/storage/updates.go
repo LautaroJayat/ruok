@@ -85,7 +85,7 @@ SELECT
 	success_statuses,
 	tls_client_cert,
 	updated_at
-FROM jobs
+FROM ruok.jobs
 WHERE id = $1
 `
 

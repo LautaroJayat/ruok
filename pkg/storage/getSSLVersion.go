@@ -22,7 +22,7 @@ func (sqls *SQLStorage) GetSSLVersion() (bool, string) {
 
 	defer tx.Rollback(ctx)
 
-	row := tx.QueryRow(ctx, "SELECT ssl_active, ssl_version from get_ssl_conn_version($1)", config.AppName())
+	row := tx.QueryRow(ctx, "SELECT ssl_active, ssl_version from ruok.get_ssl_conn_version($1)", config.AppName())
 
 	row.Scan(&sslActive, &sslVersion)
 

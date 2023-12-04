@@ -32,7 +32,7 @@ func TestListenForChanges(t *testing.T) {
 
 func TestGetJobUpdates(t *testing.T) {
 	var seedOneJobQuery = `
-INSERT INTO jobs (
+INSERT INTO ruok.jobs (
 	id,
 	cron_exp_string,
 	endpoint,
@@ -62,7 +62,7 @@ INSERT INTO jobs (
 	new_updated_at := time.Now().UnixMicro()
 
 	_, err = s.GetClient().Exec(context.Background(), `
-		UPDATE jobs SET 
+		UPDATE ruok.jobs SET 
 			cron_exp_string = $1,
 			endpoint = $2,
 			httpmethod = $3,

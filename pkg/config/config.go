@@ -20,6 +20,9 @@ var CLIENT_KEY_FILE string = "/client-key.pem"
 var DISABLE_SSL = "disable"
 var REQUIRE_SSL = "require"
 
+// PROD_ENVIRONMENT
+var ProdRuokEnvironment = "production"
+
 // EnvNames
 var DB_SSLMode string = "DB_SSLMode"
 var DB_SSL_PASS string = "DB_SSL_PASS"
@@ -33,6 +36,7 @@ var DB_NAME string = "DB_NAME"
 var APP_NAME string = "APP_NAME"
 var POLL_INTERVAL_SECONDS string = "POLL_INTERVAL_SECONDS"
 var MAX_JOBS string = "MAX_JOBS"
+var RUOK_ENVIRONMENT = "RUOK_ENVIRONMENT"
 
 // Defaults
 var defaultMaxJobs int = 10000
@@ -40,7 +44,7 @@ var defaultPollInterval time.Duration = time.Minute
 var defaultKind string = "postgres"
 var defaultProtocol string = "postgresql"
 var defaultPass string = "password"
-var defaultUser string = "user"
+var defaultUser string = "testing_user"
 var defaultHost string = "localhost"
 var defaultPort string = "5432"
 var defaultDbname string = "db1"
@@ -48,6 +52,7 @@ var defaultAppName string = "application1"
 var defaultBaseDir string = "/app"
 var defaultSSLMode string = DISABLE_SSL
 var defaultSSLPass string = "clientpass"
+var defaultRuokEnvironment string = "development"
 
 type Stats struct {
 	ClaimedJobs int

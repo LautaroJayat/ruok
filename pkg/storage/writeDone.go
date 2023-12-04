@@ -20,7 +20,7 @@ func (sqls *SQLStorage) WriteDone(j *job.Job) error {
 		return errors.New("could not insert into jobs_results")
 	}
 	_, err = tx.Exec(ctx, `
-	INSERT INTO job_results (
+	INSERT INTO ruok.job_results (
 		job_id,
 		cron_exp_string,
 		endpoint,
@@ -47,7 +47,7 @@ func (sqls *SQLStorage) WriteDone(j *job.Job) error {
 	}
 
 	_, err = tx.Exec(ctx, `
-	UPDATE jobs SET
+	UPDATE ruok.jobs SET
 		last_execution = $1,
 		should_execute_at = $2,
 		last_response_at =$3,

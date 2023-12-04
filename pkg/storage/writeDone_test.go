@@ -11,7 +11,7 @@ import (
 )
 
 var seedOneJobQuery = `
-INSERT INTO jobs (
+INSERT INTO ruok.jobs (
 	id,
 	cron_exp_string,
 	endpoint,
@@ -57,7 +57,7 @@ SELECT
 	last_status_code,
 	success_statuses,
 	claimed_by
- FROM job_results 
+ FROM ruok.job_results 
 WHERE job_id = $1
 `
 
@@ -68,7 +68,7 @@ SELECT
 	last_response_at,
 	last_message,
 	last_status_code
-FROM jobs
+FROM ruok.jobs
 WHERE id = $1
 `
 
