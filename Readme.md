@@ -1,5 +1,9 @@
 # RUOK Scheduler
 
+<div align="center">
+    <img width="400" src="./assets/big_ruok_logo.svg" alt="RUOK Logo" />
+</div>
+
 RUOK Scheduler is an open-source tool designed for hassle-free service monitoring. Keep a close eye on your infrastructure effortlessly with our intuitive scheduler.
 
 - [RUOK Scheduler](#ruok-scheduler)
