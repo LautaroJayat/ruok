@@ -3,7 +3,7 @@
 RUOK Scheduler is an open-source tool designed for hassle-free service monitoring. Keep a close eye on your infrastructure effortlessly with our intuitive scheduler.
 
 - [RUOK Scheduler](#ruok-scheduler)
-  - [1. Introduction](#1. Introduction)
+  - [1. Introduction](#Introduction)
     - [1.1 Purpose](#purpose)
     - [1.2 Why RUOK Scheduler?](#why-ruok-scheduler)
   - [2. Getting Started](#getting-started)
