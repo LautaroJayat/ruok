@@ -44,7 +44,7 @@ make build
 After building, run the scheduler using:
 
 ```bash
-./ruok
+./ruok start
 ```
 
 ### 2.3 Preparing the Database
@@ -52,10 +52,12 @@ After building, run the scheduler using:
 Before running the scheduler, migrate the database with:
 
 ```bash
-./ruok -migrate
+./ruok migrate
 ```
 
 This command sets up the necessary schema for tables and functions in the PostgreSQL database.
+
+As this command needs to create a schema, tables, functions, some roles, and grant privileges to those roles, the postgres user must have those permissions.
 
 ### 2.4 Configurations
 
