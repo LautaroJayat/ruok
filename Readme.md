@@ -1,10 +1,19 @@
 # RUOK Scheduler
 
-<div align="center">
-    <img width="400" src="./assets/big_ruok_logo.svg" alt="RUOK Logo" />
-</div>
-
 RUOK Scheduler is an open-source tool designed for hassle-free service monitoring. Keep a close eye on your infrastructure effortlessly with our intuitive scheduler.
+
+- [RUOK Scheduler](#ruok-scheduler)
+  - [Introduction](#introduction)
+    - [Purpose](#purpose)
+    - [Why RUOK Scheduler?](#why-ruok-scheduler)
+  - [Getting Started](#getting-started)
+    - [Building from Source](#building-from-source)
+    - [Starting RUOK Scheduler](#starting-ruok-scheduler)
+    - [Preparing the Database](#preparing-the-database)
+    - [Configurations](#configurations)
+    - [Job Configuration](#job-configuration)
+    - [Cron Specification](#cron-specification)
+  - [License](#license)
 
 ## Introduction
 
@@ -49,18 +58,18 @@ This command sets up the necessary schema for tables and functions in the Postgr
 All configurations for RUOK Scheduler are expected as environment variables. Below are the configurations along with their respective environment variables:
 
 ```bash
-STORAGE_KIND: Storage type (default: postgres)
-DB_PROTOCOL: Database protocol (default: postgresql)
-DB_PASS: Database password (default: password)
-DB_USER: Database user (default: user)
-DB_HOST: Database host (default: localhost)
-DB_PORT: Database port (default: 5432)
-DB_NAME: Database name (default: db1)
-APP_NAME: Application name (default: application1)
-DB_SSLMode: SSL mode for the database (default: disable)
-DB_SSL_PASS: SSL password for the database (default: clientpass)
-POLL_INTERVAL_SECONDS: Polling interval in seconds (default: 60)
-MAX_JOBS: Maximum number of jobs (default: 10000)
+STORAGE_KIND           # Storage type (default: postgres)
+DB_PROTOCOL            # Database protocol (default: postgresql)
+DB_PASS                # Database password (default: password)
+DB_USER                # Database user (default: user)
+DB_HOST                # Database host (default: localhost)
+DB_PORT                # Database port (default: 5432)
+DB_NAME                # Database name (default: db1)
+APP_NAME               # Application name (default: application1)
+DB_SSLMode             # SSL mode for the database (default: disable)
+DB_SSL_PASS            # SSL password for the database (default: clientpass)
+POLL_INTERVAL_SECONDS  # Polling interval in seconds (default: 60)
+MAX_JOBS               # Maximum number of jobs (default: 10000)
 ```
 
 ### Job Configuration
@@ -81,7 +90,7 @@ RUOK Scheduler uses the [cron expression specification outlined in Wikipedia's C
 
 ## License
 
-This software is released under the MIT License. For more details, refer to the source code and documentation.
+This software is released under the APACHE v2.0. For more details, refer to the source code and documentation.
 
 Feel free to explore the source code and adapt RUOK Scheduler to meet your specific monitoring needs. If you encounter any issues or have suggestions for improvement, please contribute to the project. Happy monitoring!
 
