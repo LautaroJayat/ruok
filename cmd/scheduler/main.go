@@ -1,4 +1,4 @@
-package main
+package scheduler
 
 import (
 	// add this
@@ -13,6 +13,7 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/rs/zerolog/pkgerrors"
+	"github.com/spf13/cobra"
 
 	"github.com/back-end-labs/ruok/pkg/api"
 	"github.com/back-end-labs/ruok/pkg/config"
@@ -20,7 +21,7 @@ import (
 	"github.com/back-end-labs/ruok/pkg/storage"
 )
 
-func main() {
+func start() {
 
 	cfg := config.FromEnvs()
 
@@ -64,4 +65,16 @@ func main() {
 	log.Info().Msg("timeout of 5 seconds.")
 	log.Info().Msgf("Server exiting with status %d", exitStatus)
 	os.Exit(exitStatus)
+}
+
+var StartScheduler = &cobra.Command{
+	Use:   "start",
+	Short: "Starts the scheduler main process",
+	Long: `Starts the scheduler main process.
+  * It will get the configurations,
+  * connect to the database,
+  * mount http endpoints and schedule the maximum amount of jobs it can.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		start()
+	},
 }

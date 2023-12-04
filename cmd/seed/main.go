@@ -1,4 +1,4 @@
-package main
+package seed
 
 import "github.com/back-end-labs/ruok/pkg/storage"
 
