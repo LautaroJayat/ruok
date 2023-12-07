@@ -2,7 +2,7 @@ include .env
 export $(shell sed 's/=.*//' .env)
 
 migrate:
-	go run cmd/main.go migrate
+	go run cmd/main.go setupdb
 
 seed:
 	go run cmd/seed/main.go
