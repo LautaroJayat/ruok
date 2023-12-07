@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"runtime"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/rs/zerolog/log"
@@ -23,6 +24,13 @@ var REQUIRE_SSL = "require"
 // PROD_ENVIRONMENT
 var ProdRuokEnvironment = "production"
 
+// ALERT CHANNELS
+var ALERT_HTTP string = "http"
+var AVAILABLE_CHANNELS = []string{ALERT_HTTP}
+
+//var ALERT_SMS string = "sms"
+//var ALERT_MAIL string = "mail"
+
 // EnvNames
 var DB_SSLMode string = "DB_SSLMode"
 var DB_SSL_PASS string = "DB_SSL_PASS"
@@ -37,6 +45,7 @@ var APP_NAME string = "APP_NAME"
 var POLL_INTERVAL_SECONDS string = "POLL_INTERVAL_SECONDS"
 var MAX_JOBS string = "MAX_JOBS"
 var RUOK_ENVIRONMENT = "RUOK_ENVIRONMENT"
+var ALERT_CHANNELS = "ALERT_CHANNELS"
 
 // Defaults
 var defaultMaxJobs int = 10000
@@ -53,6 +62,7 @@ var defaultBaseDir string = "/app"
 var defaultSSLMode string = DISABLE_SSL
 var defaultSSLPass string = "clientpass"
 var defaultRuokEnvironment string = "development"
+var defaultAlertChannels = []string{ALERT_HTTP}
 
 type Stats struct {
 	ClaimedJobs int
@@ -72,21 +82,48 @@ var AppStats *Stats = &Stats{
 }
 
 type Configs struct {
-	Kind         string
-	Protocol     string
-	Pass         string
-	User         string
-	Host         string
-	Port         string
-	Dbname       string
-	SSLConfigs   SSLConfig
-	AppName      string
-	MaxJobs      int
-	PollInterval time.Duration
-	StartedAt    int64
+	Kind          string
+	Protocol      string
+	Pass          string
+	User          string
+	Host          string
+	Port          string
+	Dbname        string
+	SSLConfigs    SSLConfig
+	AppName       string
+	MaxJobs       int
+	PollInterval  time.Duration
+	StartedAt     int64
+	AlertChannels []string
 }
 
 var globalConfigs *Configs = nil
+
+func parseAlertChannels() []string {
+	chanString := getEnvOrDefault(ALERT_CHANNELS, ALERT_HTTP)
+	inputChannels := strings.Split(chanString, ",")
+
+	for i, ch := range inputChannels {
+		inputChannels[i] = strings.Trim(ch, " ")
+	}
+
+	channels := []string{}
+
+	for _, ch := range inputChannels {
+		for _, availableCh := range AVAILABLE_CHANNELS {
+			if ch == availableCh {
+				channels = append(channels, ch)
+			}
+		}
+	}
+
+	if len(channels) == 0 {
+		return defaultAlertChannels
+	}
+
+	return channels
+
+}
 
 func parseMaxJobs(cfg *Configs) {
 	maxJobs, err := strconv.ParseInt(os.Getenv(MAX_JOBS), 10, 64)
@@ -193,17 +230,18 @@ func validateAppNameOrFail() string {
 func FromEnvs() Configs {
 	if globalConfigs == nil {
 		globalConfigs = &Configs{
-			Kind:         getEnvOrDefault(STORAGE_KIND, defaultKind),
-			Protocol:     getEnvOrDefault(DB_PROTOCOL, defaultProtocol),
-			Pass:         getEnvOrDefault(DB_PASS, defaultPass),
-			User:         getEnvOrDefault(DB_USER, defaultUser),
-			Host:         getEnvOrDefault(DB_HOST, defaultHost),
-			Port:         getEnvOrDefault(DB_PORT, defaultPort),
-			Dbname:       getEnvOrDefault(DB_NAME, defaultDbname),
-			AppName:      validateAppNameOrFail(),
-			SSLConfigs:   getSSLConfigs(),
-			MaxJobs:      defaultMaxJobs,
-			PollInterval: defaultPollInterval,
+			Kind:          getEnvOrDefault(STORAGE_KIND, defaultKind),
+			Protocol:      getEnvOrDefault(DB_PROTOCOL, defaultProtocol),
+			Pass:          getEnvOrDefault(DB_PASS, defaultPass),
+			User:          getEnvOrDefault(DB_USER, defaultUser),
+			Host:          getEnvOrDefault(DB_HOST, defaultHost),
+			Port:          getEnvOrDefault(DB_PORT, defaultPort),
+			Dbname:        getEnvOrDefault(DB_NAME, defaultDbname),
+			AppName:       validateAppNameOrFail(),
+			SSLConfigs:    getSSLConfigs(),
+			MaxJobs:       defaultMaxJobs,
+			PollInterval:  defaultPollInterval,
+			AlertChannels: parseAlertChannels(),
 		}
 	}
 	return *globalConfigs
@@ -228,4 +266,11 @@ func PollingInterval() time.Duration {
 		return FromEnvs().PollInterval
 	}
 	return globalConfigs.PollInterval
+}
+
+func AlertChannels() []string {
+	if globalConfigs == nil {
+		return FromEnvs().AlertChannels
+	}
+	return globalConfigs.AlertChannels
 }
