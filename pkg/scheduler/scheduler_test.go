@@ -8,6 +8,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/back-end-labs/ruok/pkg/alerting"
+	"github.com/back-end-labs/ruok/pkg/alerting/models"
 	"github.com/back-end-labs/ruok/pkg/config"
 	"github.com/back-end-labs/ruok/pkg/job"
 	"github.com/back-end-labs/ruok/pkg/storage"
@@ -158,14 +160,30 @@ func (ms *mockStorage) StopListeningForChanges() error {
 	return nil
 }
 
-func TestScheduler_Start(t *testing.T) {
+func TestScheduler_Start_HappyPath(t *testing.T) {
+	dummyfn := func(i models.AlertInput) (string, error) {
+		_ = i
+		return "", nil
+
+	}
+
+	mockAlertingManager := alerting.CreateAlertManager(
+		[]string{"http"},
+		models.PluginList{
+			func() (string, models.AlertFunc) {
+				return "http", dummyfn
+			},
+		},
+	)
+
 	releasedJobs = []*job.Job{}
 	mockedJobList = NewJobList(config.MaxJobs())
 	mockedStorage := &mockStorage{
 		JobUpdatesCh: make(chan int, 1),
 	}
 
-	sched := NewScheduler(mockedStorage, mockedJobList)
+	sched := NewScheduler(mockedStorage, mockAlertingManager, mockedJobList)
+
 	exitCodeCh := make(chan int, 1)
 	signalCh := make(chan os.Signal, 1)
 

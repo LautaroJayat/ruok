@@ -12,6 +12,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/back-end-labs/ruok/pkg/alerting"
 	"github.com/back-end-labs/ruok/pkg/config"
 	"github.com/back-end-labs/ruok/pkg/cronParser"
 	jobs "github.com/back-end-labs/ruok/pkg/job"
@@ -38,14 +39,15 @@ func NewJobList(maxJobs int) *JobsList {
 }
 
 type Scheduler struct {
-	l        *JobsList
-	storage  storage.SchedulerStorage
-	parser   cronParser.ParseFn
-	notifier chan int
+	l            *JobsList
+	storage      storage.SchedulerStorage
+	parser       cronParser.ParseFn
+	notifier     chan int
+	alertManager *alerting.AlertManager
 }
 
-func NewScheduler(s storage.SchedulerStorage, jobList *JobsList) *Scheduler {
-	return &Scheduler{l: jobList, storage: s, parser: cronParser.Parse}
+func NewScheduler(s storage.SchedulerStorage, am *alerting.AlertManager, jobList *JobsList) *Scheduler {
+	return &Scheduler{l: jobList, storage: s, parser: cronParser.Parse, alertManager: am}
 }
 
 func (sched *Scheduler) initJobList(j []*jobs.Job, notifier chan int) {
@@ -61,7 +63,7 @@ func (sched *Scheduler) initJobList(j []*jobs.Job, notifier chan int) {
 		job.AbortChannel = make(chan struct{})
 		job.Handlers.ExecuteFn = jobhandler.HTTPExecutor
 		job.Handlers.OnSuccessFn = jobhandler.OnSuccessHandler(sched.storage)
-		job.Handlers.OnErrorFn = jobhandler.OnErrorHandler(sched.storage)
+		job.Handlers.OnErrorFn = jobhandler.OnErrorHandler(sched.storage, sched.alertManager)
 		sched.l.list[job.Id] = job
 		go job.Schedule(notifier)
 		job.Scheduled = true
@@ -114,7 +116,7 @@ func (sched *Scheduler) DumpToFile(w io.Writer) error {
 		},
 	)
 	if err != nil {
-		fmt.Printf("couldnt create json from jobs. error=%q", err.Error())
+		fmt.Printf("couldn't create json from jobs. error=%q", err.Error())
 	}
 
 	return nil

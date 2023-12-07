@@ -15,6 +15,7 @@ import (
 	"github.com/rs/zerolog/pkgerrors"
 	"github.com/spf13/cobra"
 
+	"github.com/back-end-labs/ruok/pkg/alerting"
 	"github.com/back-end-labs/ruok/pkg/api"
 	"github.com/back-end-labs/ruok/pkg/config"
 	"github.com/back-end-labs/ruok/pkg/scheduler"
@@ -22,7 +23,6 @@ import (
 )
 
 func start() {
-
 	cfg := config.FromEnvs()
 
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
@@ -31,7 +31,7 @@ func start() {
 
 	log.Info().Msg("Starting RUOK scheduler :)")
 
-	s, close := storage.NewStorage(&cfg)
+	store, close := storage.NewStorage(&cfg)
 	defer close()
 
 	jobsList := scheduler.NewJobList(int(cfg.MaxJobs))
@@ -41,7 +41,7 @@ func start() {
 	srv := &http.Server{
 
 		Addr:    ":8080",
-		Handler: api.CreateRouter(s),
+		Handler: api.CreateRouter(store),
 	}
 
 	go func() {
@@ -50,7 +50,14 @@ func start() {
 		}
 	}()
 
-	exitStatus := scheduler.NewScheduler(s, jobsList).Start(signalCh)
+	alertingManager := alerting.CreateAlertManager(cfg.AlertChannels, alerting.RegisteredFn)
+
+	exitStatus := scheduler.NewScheduler(
+		store,
+		alertingManager,
+		jobsList,
+	).Start(signalCh)
+
 	log.Info().Msgf("scheduler returned with exit code of %d", exitStatus)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
