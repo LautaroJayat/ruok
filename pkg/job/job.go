@@ -3,6 +3,7 @@ package job
 import (
 	"time"
 
+	"github.com/back-end-labs/ruok/pkg/alerting/models"
 	"github.com/back-end-labs/ruok/pkg/cronParser"
 	"github.com/rs/zerolog/log"
 )
@@ -24,7 +25,6 @@ func Contains(x int, arr []int) bool {
 		}
 	}
 	return false
-
 }
 
 type Header struct {
@@ -55,6 +55,11 @@ type Job struct {
 	Status          string                   `json:"status"`
 	ClaimedBy       string                   `json:"claimedBy"`
 	CreatedAt       int                      `json:"createdAt"`
+	AlertStrategy   string                   `json:"alertStrategy"`
+	AlertMethod     string                   `json:"alertMethod"`
+	AlertEndpoint   string                   `json:"alertEndpoint"`
+	AlertPayload    string                   `json:"alertPayload"`
+	AlertHeaders    []Header                 `json:"alertHeaders"`
 	TLSClientCert   string                   `json:"-"`
 	Scheduled       bool                     `json:"-"`
 	AbortChannel    chan struct{}            `json:"-"`
@@ -141,6 +146,17 @@ func (j *Job) Execute() ExecutionResult {
 func (j *Job) OnError() {
 	j.Handlers.OnErrorFn(j)
 }
+
 func (j *Job) OnSuccess() {
 	j.Handlers.OnSuccessFn(j)
+}
+
+func (j *Job) AlertingInput() models.AlertInput {
+	return models.AlertInput{
+		AlertStrategy:  j.AlertStrategy,
+		Url:            j.AlertEndpoint,
+		Method:         j.AlertMethod,
+		Payload:        j.AlertPayload,
+		ExpectedStatus: 200,
+	}
 }

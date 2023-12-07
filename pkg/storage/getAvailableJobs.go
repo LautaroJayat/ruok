@@ -36,7 +36,12 @@ SELECT
 	headers_string,
 	success_statuses,
 	tls_client_cert,
-	created_at
+	created_at,
+	alert_strategy,
+	alert_endpoint,
+	alert_method,
+	alert_headers_string,
+	alert_payload
  FROM ruok.jobs 
  WHERE status = 'pending to be claimed' 
  FOR UPDATE SKIP LOCKED
@@ -65,6 +70,11 @@ SELECT
 		var SuccessStatuses []int
 		var TLSClientCert sql.NullString
 		var CreatedAt int
+		var AlertStrategy sql.NullString
+		var AlertEndpoint sql.NullString
+		var AlertMethod sql.NullString
+		var AlertHeadersString sql.NullString
+		var AlertPayload sql.NullString
 
 		err = rows.Scan(
 			&Id,
@@ -81,6 +91,11 @@ SELECT
 			&SuccessStatuses,
 			&TLSClientCert,
 			&CreatedAt,
+			&AlertStrategy,
+			&AlertEndpoint,
+			&AlertMethod,
+			&AlertHeadersString,
+			&AlertPayload,
 		)
 		if err != nil {
 			log.Error().Err(err).Msg("could not scan available jobs row")
@@ -96,6 +111,23 @@ SELECT
 
 				jobsList = append(jobsList, &job.Job{
 					Status: "bad headers",
+					Id:     Id,
+				})
+
+				continue
+			}
+		}
+
+		AlertHeaders := []job.Header{}
+
+		if AlertHeadersString.Valid && AlertHeadersString.String != "" {
+
+			if err := json.Unmarshal([]byte(AlertHeadersString.String), &AlertHeaders); err != nil {
+
+				log.Error().Err(err).Msg("could not unmarshal alerting headers of available job")
+
+				jobsList = append(jobsList, &job.Job{
+					Status: "bad alerting headers",
 					Id:     Id,
 				})
 
@@ -121,6 +153,11 @@ SELECT
 			Status:          "claimed",
 			Handlers:        job.Handlers{},
 			CreatedAt:       CreatedAt,
+			AlertStrategy:   AlertStrategy.String,
+			AlertEndpoint:   AlertEndpoint.String,
+			AlertMethod:     AlertMethod.String,
+			AlertHeaders:    AlertHeaders,
+			AlertPayload:    AlertPayload.String,
 		}
 
 		jobsList = append(jobsList, j)
