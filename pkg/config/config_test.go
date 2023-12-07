@@ -99,6 +99,7 @@ func TestFromEnvs(t *testing.T) {
 	originalDBSSLPass := os.Getenv(DB_SSL_PASS)
 	originalMaxJobs := os.Getenv(MAX_JOBS)
 	originalPollInterval := os.Getenv(POLL_INTERVAL_SECONDS)
+	originalAlertChannels := os.Getenv(ALERT_CHANNELS)
 
 	os.Setenv(STORAGE_KIND, "")
 	os.Setenv(DB_PROTOCOL, "")
@@ -112,6 +113,7 @@ func TestFromEnvs(t *testing.T) {
 	os.Setenv(DB_SSL_PASS, defaultSSLPass)
 	os.Setenv(MAX_JOBS, "")
 	os.Setenv(POLL_INTERVAL_SECONDS, "")
+	os.Setenv(ALERT_CHANNELS, "")
 
 	// Clean up environment variables after the test
 	defer func() {
@@ -127,6 +129,7 @@ func TestFromEnvs(t *testing.T) {
 		os.Setenv(DB_SSL_PASS, originalDBSSLPass)
 		os.Setenv(MAX_JOBS, originalMaxJobs)
 		os.Setenv(POLL_INTERVAL_SECONDS, originalPollInterval)
+		os.Setenv(ALERT_CHANNELS, originalAlertChannels)
 	}()
 
 	// Call the function to be tested
@@ -180,6 +183,13 @@ func TestFromEnvs(t *testing.T) {
 	if config.PollInterval != defaultPollInterval {
 		t.Errorf("Expected PollInterval to be %s, but got '%s'", defaultPollInterval, config.PollInterval)
 	}
+	assert.ElementsMatchf(
+		t,
+		config.AlertChannels,
+		defaultAlertChannels,
+		"Expected AlertChannels to be to be %v, but got '%v'", config.AlertChannels, config.PollInterval,
+	)
+
 }
 
 func TestIsInvalidAppName(t *testing.T) {
@@ -229,6 +239,53 @@ func TestIsInvalidAppName(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			isInvalid := isInvalidAppName(tc.name)
 			assert.Equal(t, tc.invalid, isInvalid, "Unexpected result for app name: %s", tc.name)
+		})
+	}
+}
+
+func TestParseAlertChannels(t *testing.T) {
+	// Store the original environment variable value
+	originalEnv := os.Getenv(ALERT_CHANNELS)
+	defer os.Setenv(ALERT_CHANNELS, originalEnv)
+
+	tests := []struct {
+		name           string
+		envValue       string
+		expectedResult []string
+	}{
+		{
+			name:           "DefaultChannels",
+			envValue:       "",
+			expectedResult: []string{"http"},
+		},
+		{
+			name:           "CustomChannels",
+			envValue:       "http",
+			expectedResult: []string{"http"},
+		},
+		{
+			name:           "InvalidChannels",
+			envValue:       "invalid",
+			expectedResult: []string{"http"},
+		},
+		{
+			name:           "EmptyEnvValue",
+			envValue:       ",,",
+			expectedResult: []string{"http"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Set the environment variable
+			os.Setenv(ALERT_CHANNELS, tt.envValue)
+
+			// Call the function
+			result := parseAlertChannels()
+
+			// Use assert library to compare slices
+			assert.ElementsMatch(t, tt.expectedResult, result)
+
 		})
 	}
 }
