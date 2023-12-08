@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/back-end-labs/ruok/pkg/config"
+	"github.com/back-end-labs/ruok/pkg/job"
 )
 
 var seedQuery string = `
@@ -77,4 +78,17 @@ func Drop() {
 	if err != nil {
 		log.Fatalf("couldn't seed. error=%q", err)
 	}
+}
+
+func hasMinAlertFields(j job.Job) bool {
+	if j.AlertStrategy == "" {
+		return false
+	}
+	if j.AlertEndpoint == "" {
+		return false
+	}
+	if j.AlertMethod == "" {
+		return false
+	}
+	return true
 }

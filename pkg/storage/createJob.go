@@ -38,19 +38,6 @@ INSERT INTO ruok.jobs (
 ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);
 `
 
-func hasMinAlertFields(j job.Job) bool {
-	if j.AlertStrategy == "" {
-		return false
-	}
-	if j.AlertEndpoint == "" {
-		return false
-	}
-	if j.AlertMethod == "" {
-		return false
-	}
-	return true
-}
-
 func (sqls *SQLStorage) CreateJob(j job.Job) error {
 	ctx := context.Background()
 	tx, err := sqls.Db.Begin(ctx)
