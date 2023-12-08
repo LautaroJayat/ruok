@@ -35,6 +35,7 @@ type APIStorage interface {
 	Connected() bool
 	GetSSLVersion() (bool, string)
 	CreateJob(j job.Job) error
+	UpdateJob(j job.Job) error
 }
 
 type SQLStorage struct {
