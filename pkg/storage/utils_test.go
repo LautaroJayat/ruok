@@ -3,19 +3,18 @@ package storage
 import (
 	"testing"
 
-	"github.com/back-end-labs/ruok/pkg/job"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestHasMinAlertFields(t *testing.T) {
 	tests := []struct {
 		name     string
-		job      job.Job
+		job      CreateJobInput
 		expected bool
 	}{
 		{
 			name: "MinimumFieldsSet",
-			job: job.Job{
+			job: CreateJobInput{
 				AlertStrategy: "email",
 				AlertEndpoint: "test@example.com",
 				AlertMethod:   "POST",
@@ -24,7 +23,7 @@ func TestHasMinAlertFields(t *testing.T) {
 		},
 		{
 			name: "MissingAlertStrategy",
-			job: job.Job{
+			job: CreateJobInput{
 				AlertEndpoint: "test@example.com",
 				AlertMethod:   "POST",
 			},
@@ -32,7 +31,7 @@ func TestHasMinAlertFields(t *testing.T) {
 		},
 		{
 			name: "MissingAlertEndpoint",
-			job: job.Job{
+			job: CreateJobInput{
 				AlertStrategy: "email",
 				AlertMethod:   "POST",
 			},
@@ -40,7 +39,7 @@ func TestHasMinAlertFields(t *testing.T) {
 		},
 		{
 			name: "MissingAlertMethod",
-			job: job.Job{
+			job: CreateJobInput{
 				AlertStrategy: "email",
 				AlertEndpoint: "test@example.com",
 			},
@@ -48,14 +47,14 @@ func TestHasMinAlertFields(t *testing.T) {
 		},
 		{
 			name:     "AllFieldsMissing",
-			job:      job.Job{},
+			job:      CreateJobInput{},
 			expected: false,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := hasMinAlertFields(tt.job)
+			result := HasMinAlertFields(tt.job.AlertStrategy, tt.job.AlertEndpoint, tt.job.AlertMethod)
 			assert.Equal(t, tt.expected, result)
 		})
 	}
