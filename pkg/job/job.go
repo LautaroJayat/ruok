@@ -27,11 +27,6 @@ func Contains(x int, arr []int) bool {
 	return false
 }
 
-type Header struct {
-	Name  string `json:"name"`
-	Value string `json:"value"`
-}
-
 type Handlers struct {
 	ExecuteFn   func(*Job) ExecutionResult
 	OnErrorFn   func(*Job)
@@ -49,7 +44,7 @@ type Job struct {
 	MaxRetries      int                      `json:"maxRetries"`
 	Endpoint        string                   `json:"endpoint"`
 	HttpMethod      string                   `json:"httpmethod"`
-	Headers         []Header                 `json:"headers"`
+	Headers         map[string]string        `json:"headers"`
 	SuccessStatuses []int                    `json:"successStatuses"`
 	Succeeded       string                   `json:"succeeded"`
 	Status          string                   `json:"status"`
@@ -59,7 +54,7 @@ type Job struct {
 	AlertMethod     string                   `json:"alertMethod"`
 	AlertEndpoint   string                   `json:"alertEndpoint"`
 	AlertPayload    string                   `json:"alertPayload"`
-	AlertHeaders    []Header                 `json:"alertHeaders"`
+	AlertHeaders    map[string]string        `json:"alertHeaders"`
 	TLSClientCert   string                   `json:"-"`
 	Scheduled       bool                     `json:"-"`
 	AbortChannel    chan struct{}            `json:"-"`
@@ -69,23 +64,23 @@ type Job struct {
 }
 
 type JobExecution struct {
-	Id              int       `json:"id"`
-	JobId           int       `json:"jobId"`
-	CronExpString   string    `json:"cronexp"`
-	LastExecution   time.Time `json:"lastExecution"`
-	ShouldExecuteAt time.Time `json:"shouldExecuteAt"`
-	LastResponseAt  time.Time `json:"lastResponseAt"`
-	LastMessage     string    `json:"lastMessage"`
-	LastStatusCode  int       `json:"lastStatusCode"`
-	Endpoint        string    `json:"endpoint"`
-	HttpMethod      string    `json:"httpmethod"`
-	Headers         []Header  `json:"headers"`
-	SuccessStatuses []int     `json:"successStatuses"`
-	Succeeded       string    `json:"succeeded"`
-	Status          string    `json:"status"`
-	ClaimedBy       string    `json:"claimedBy"`
-	CreatedAt       int       `json:"createdAt"`
-	DeletedAt       int       `json:"deletedAt,omitempty"`
+	Id              int               `json:"id"`
+	JobId           int               `json:"jobId"`
+	CronExpString   string            `json:"cronexp"`
+	LastExecution   time.Time         `json:"lastExecution"`
+	ShouldExecuteAt time.Time         `json:"shouldExecuteAt"`
+	LastResponseAt  time.Time         `json:"lastResponseAt"`
+	LastMessage     string            `json:"lastMessage"`
+	LastStatusCode  int               `json:"lastStatusCode"`
+	Endpoint        string            `json:"endpoint"`
+	HttpMethod      string            `json:"httpmethod"`
+	Headers         map[string]string `json:"headers"`
+	SuccessStatuses []int             `json:"successStatuses"`
+	Succeeded       string            `json:"succeeded"`
+	Status          string            `json:"status"`
+	ClaimedBy       string            `json:"claimedBy"`
+	CreatedAt       int               `json:"createdAt"`
+	DeletedAt       int               `json:"deletedAt,omitempty"`
 }
 
 func (j *Job) IsSuccess(x int) bool {

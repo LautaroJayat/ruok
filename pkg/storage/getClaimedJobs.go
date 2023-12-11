@@ -92,7 +92,7 @@ SELECT
 			continue
 		}
 
-		Headers := []job.Header{}
+		Headers := map[string]string{}
 
 		if HeadersString.Valid && HeadersString.String != "" {
 			if err := json.Unmarshal([]byte(HeadersString.String), &Headers); err != nil {

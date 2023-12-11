@@ -101,7 +101,7 @@ SELECT
 			log.Error().Err(err).Msg("could not scan available jobs row")
 		}
 
-		Headers := []job.Header{}
+		Headers := map[string]string{}
 
 		if HeadersString.Valid && HeadersString.String != "" {
 
@@ -118,7 +118,7 @@ SELECT
 			}
 		}
 
-		AlertHeaders := []job.Header{}
+		AlertHeaders := map[string]string{}
 
 		if AlertHeadersString.Valid && AlertHeadersString.String != "" {
 

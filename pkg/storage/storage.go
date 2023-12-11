@@ -34,6 +34,8 @@ type APIStorage interface {
 	GetClaimedJobsExecutions(jobId int, limit int, offset int) []*job.JobExecution
 	Connected() bool
 	GetSSLVersion() (bool, string)
+	CreateJob(j CreateJobInput) error
+	UpdateJob(j UpdateJobInput) error
 }
 
 type SQLStorage struct {

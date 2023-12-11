@@ -78,3 +78,16 @@ func Drop() {
 		log.Fatalf("couldn't seed. error=%q", err)
 	}
 }
+
+func HasMinAlertFields(strategy string, endpoint string, method string) bool {
+	if strategy == "" {
+		return false
+	}
+	if endpoint == "" {
+		return false
+	}
+	if method == "" {
+		return false
+	}
+	return true
+}

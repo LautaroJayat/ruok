@@ -21,8 +21,8 @@ func HTTPExecutor(j *job.Job) job.ExecutionResult {
 		return job.ExecutionResult{}
 	}
 
-	for i := 0; i < len(j.Headers); i++ {
-		r.Header.Set(j.Headers[i].Name, j.Headers[i].Name)
+	for k, v := range j.Headers {
+		r.Header.Set(k, v)
 	}
 
 	result := job.ExecutionResult{}

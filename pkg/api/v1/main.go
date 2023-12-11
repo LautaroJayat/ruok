@@ -2,7 +2,9 @@ package v1
 
 import (
 	"fmt"
+	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/back-end-labs/ruok/pkg/config"
 	"github.com/back-end-labs/ruok/pkg/storage"
@@ -15,6 +17,7 @@ var jobsLabel string = "jobs"
 var jobResultsLabel string = "jobResults"
 var jobIdLabel string = "jobId"
 var claimedJobsLabel string = "claimedJobs"
+var errorLabel string = "error"
 
 func Status(c *gin.Context) {
 	c.String(200, "OK")
@@ -107,6 +110,103 @@ func ListJobExecutions(s storage.APIStorage) gin.HandlerFunc {
 			offsetLabel:     offset,
 			jobIdParam:      jobIdParam,
 			jobResultsLabel: jobExecutionList,
+		})
+
+	}
+}
+
+func CreateJob(s storage.APIStorage) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var j storage.CreateJobInput
+		if err := c.ShouldBindJSON(&j); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		if j.AlertMethod != "" || j.AlertStrategy != "" || j.AlertEndpoint != "" {
+			if !storage.HasMinAlertFields(j.AlertStrategy, j.AlertEndpoint, j.AlertMethod) {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "if alerting is set, must provide strategy, endpoint and method"})
+				return
+			}
+		}
+
+		errors, hasErrors := validateCreateFields(j)
+
+		if hasErrors {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": errors,
+			})
+			return
+		}
+
+		j.HttpMethod = strings.ToUpper(j.HttpMethod)
+
+		if j.AlertMethod != "" && validHttpMethod(j.AlertMethod) {
+			j.AlertMethod = strings.ToUpper(j.AlertMethod)
+
+		}
+
+		err := s.CreateJob(j)
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": "an internal error happened while trying to create a new job",
+			})
+			return
+		}
+
+		c.JSON(http.StatusCreated, gin.H{
+			"message": "job created",
+		})
+
+	}
+}
+
+func UpdateJob(s storage.APIStorage) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var j storage.UpdateJobInput
+
+		id, err := strconv.Atoi(c.Param("id"))
+
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{errorLabel: fmt.Sprintf("bad id provided: %s", c.Param("id"))})
+			return
+		}
+
+		if err := c.ShouldBindJSON(&j); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{errorLabel: err.Error()})
+			return
+		}
+
+		j.Id = id
+
+		if j.AlertMethod != "" || j.AlertStrategy != "" || j.AlertEndpoint != "" {
+			if !storage.HasMinAlertFields(j.AlertStrategy, j.AlertEndpoint, j.AlertMethod) {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "if alerting is set, must provide strategy, endpoint and method"})
+				return
+			}
+		}
+
+		errors, hasErrors := validateUpdateFields(j)
+
+		if hasErrors {
+			c.JSON(http.StatusBadRequest, gin.H{
+				errorLabel: errors,
+			})
+			return
+		}
+
+		err = s.UpdateJob(j)
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				errorLabel: "an internal error happened while trying to create a new job",
+			})
+			return
+		}
+
+		c.JSON(http.StatusAccepted, gin.H{
+			"message": "job created",
 		})
 
 	}

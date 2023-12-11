@@ -37,7 +37,7 @@ var makeJobStruct = func(now time.Time) job.Job {
 		HttpMethod:      "GET",
 		Endpoint:        "/",
 		SuccessStatuses: []int{200},
-		Headers:         []job.Header{},
+		Headers:         map[string]string{},
 		MaxRetries:      1,
 	}
 }

@@ -21,9 +21,7 @@ func TestHTTPExecutor_SuccessfulRequest(t *testing.T) {
 	testJob := &job.Job{
 		HttpMethod: "GET",
 		Endpoint:   server.URL,
-		Headers: []job.Header{
-			{Name: "Content-Type", Value: "application/json"},
-		},
+		Headers:    map[string]string{"Content-Type": "application/json"},
 	}
 
 	// Call the HTTPExecutor function
