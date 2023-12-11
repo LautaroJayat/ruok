@@ -7,9 +7,22 @@ import (
 	"errors"
 
 	"github.com/rs/zerolog/log"
-
-	"github.com/back-end-labs/ruok/pkg/job"
 )
+
+type UpdateJobInput struct {
+	Id              int               `json:"id"`
+	CronExpString   string            `json:"cronexp"`
+	MaxRetries      int               `json:"maxRetries"`
+	Endpoint        string            `json:"endpoint"`
+	HttpMethod      string            `json:"httpmethod"`
+	Headers         map[string]string `json:"headers"`
+	SuccessStatuses []int             `json:"successStatuses"`
+	AlertStrategy   string            `json:"alertStrategy"`
+	AlertMethod     string            `json:"alertMethod"`
+	AlertEndpoint   string            `json:"alertEndpoint"`
+	AlertPayload    string            `json:"alertPayload"`
+	AlertHeaders    map[string]string `json:"alertHeaders"`
+}
 
 var updateJobQuery = `
 UPDATE ruok.jobs SET 
@@ -28,7 +41,7 @@ UPDATE ruok.jobs SET
 WHERE id = $1;
 `
 
-func (sqls *SQLStorage) UpdateJob(j job.Job) error {
+func (sqls *SQLStorage) UpdateJob(j UpdateJobInput) error {
 	ctx := context.Background()
 	tx, err := sqls.Db.Begin(ctx)
 	defer tx.Rollback(ctx)
@@ -62,7 +75,7 @@ func (sqls *SQLStorage) UpdateJob(j job.Job) error {
 		j.HttpMethod,
 		j.MaxRetries,
 		j.SuccessStatuses,
-		j.Status,
+		"pending to be claimed",
 		j.AlertStrategy,
 		j.AlertEndpoint,
 		j.AlertMethod,

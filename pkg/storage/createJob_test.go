@@ -12,18 +12,17 @@ func TestCreateJob(t *testing.T) {
 	defer Drop()
 	tests := []struct {
 		name       string
-		job        job.Job
+		job        CreateJobInput
 		expectErr  bool
 		assertFunc func(*testing.T, *job.Job)
 	}{
 		{
 			name: "CreateJobWithNoAlerts",
-			job: job.Job{
+			job: CreateJobInput{
 				CronExpString:   "*/1 * * * *",
 				Endpoint:        "/test",
 				HttpMethod:      "GET",
 				MaxRetries:      3,
-				Status:          "pending to be claimed",
 				SuccessStatuses: []int{200},
 			},
 			expectErr: false,
@@ -38,13 +37,12 @@ func TestCreateJob(t *testing.T) {
 		},
 		{
 			name: "CreateJobWithAlerts",
-			job: job.Job{
+			job: CreateJobInput{
 				CronExpString:   "*/1 * * * *",
 				Endpoint:        "/test",
 				HttpMethod:      "GET",
 				MaxRetries:      3,
 				SuccessStatuses: []int{200},
-				Status:          "pending to be claimed",
 				AlertStrategy:   "email",
 				AlertEndpoint:   "test@example.com",
 				AlertMethod:     "POST",

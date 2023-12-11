@@ -12,19 +12,18 @@ func TestUpdateJob(t *testing.T) {
 	defer Drop()
 	tests := []struct {
 		name       string
-		job        job.Job
+		job        UpdateJobInput
 		expectErr  bool
 		assertFunc func(*testing.T, *job.Job)
 	}{
 		{
 			name: "UpdateJobWithNoAlerts",
-			job: job.Job{
+			job: UpdateJobInput{
 				Id:              1,
 				CronExpString:   "*/5 * * * *",
 				Endpoint:        "/updated-test",
 				HttpMethod:      "PUT",
 				MaxRetries:      5,
-				Status:          "pending to be claimed",
 				SuccessStatuses: []int{201},
 			},
 			expectErr: false,
@@ -39,14 +38,13 @@ func TestUpdateJob(t *testing.T) {
 		},
 		{
 			name: "UpdateJobWithAlerts",
-			job: job.Job{
+			job: UpdateJobInput{
 				Id:              1,
 				CronExpString:   "*/10 * * * *",
 				Endpoint:        "/updated-test",
 				HttpMethod:      "PUT",
 				MaxRetries:      3,
 				SuccessStatuses: []int{200},
-				Status:          "pending to be claimed",
 				AlertStrategy:   "sms",
 				AlertEndpoint:   "123456789",
 				AlertMethod:     "GET",
@@ -75,13 +73,12 @@ func TestUpdateJob(t *testing.T) {
 	defer close()
 
 	// Create a job to update
-	initialJob := job.Job{
+	initialJob := CreateJobInput{
 		CronExpString:   "*/2 * * * *",
 		Endpoint:        "/initial-test",
 		HttpMethod:      "POST",
 		MaxRetries:      2,
 		SuccessStatuses: []int{200},
-		Status:          "pending to be claimed",
 	}
 
 	for _, tt := range tests {

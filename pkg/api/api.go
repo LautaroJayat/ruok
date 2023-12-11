@@ -37,6 +37,8 @@ func CreateRouter(apiStorage storage.APIStorage) *gin.Engine {
 		apiV1.GET("/health", v1.Health)
 		apiV1.GET("/jobs", v1.ListJobs(apiStorage))
 		apiV1.GET("/jobs/:id", v1.ListJobExecutions(apiStorage))
+		apiV1.POST("/jobs", v1.CreateJob(apiStorage))
+		apiV1.PUT("/jobs/:id", v1.UpdateJob(apiStorage))
 		apiV1.GET("/instance", v1.GetInstanceInfo(apiStorage))
 	}
 	return r
