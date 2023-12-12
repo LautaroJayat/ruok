@@ -4,21 +4,21 @@ $do$
 BEGIN
    IF EXISTS (
       SELECT FROM pg_catalog.pg_roles
-      WHERE rolname = 'RUOK_DELETE_TESTING_DATA') THEN
-      RAISE NOTICE 'Role "RUOK_DELETE_TESTING_DATA" already exists. Skipping.';
+      WHERE rolname = 'RUOK_SEED_AND_DROP') THEN
+      RAISE NOTICE 'Role "RUOK_SEED_AND_DROP" already exists. Skipping.';
    ELSE
       BEGIN   -- nested block
-         CREATE ROLE RUOK_DELETE_TESTING_DATA WITH NOLOGIN;
+         CREATE ROLE RUOK_SEED_AND_DROP WITH NOLOGIN;
       EXCEPTION
          WHEN duplicate_object THEN
-            RAISE NOTICE 'Role "RUOK_DELETE_TESTING_DATA" was just created by a concurrent transaction. Skipping.';
+            RAISE NOTICE 'Role "RUOK_SEED_AND_DROP" was just created by a concurrent transaction. Skipping.';
       END;
    END IF;
 END
 $do$;
 
-GRANT DELETE ON ruok.jobs to RUOK_DELETE_TESTING_DATA;
-GRANT DELETE ON ruok.job_RESULTS to RUOK_DELETE_TESTING_DATA;
+GRANT INSERT,DELETE ON ruok.jobs to RUOK_SEED_AND_DROP;
+GRANT INSERT,DELETE ON ruok.job_RESULTS to RUOK_SEED_AND_DROP;
 
 
 -- A role that allows to drop when testing
@@ -39,5 +39,59 @@ BEGIN
    END IF;
 END
 $do$;
--- A default role for testing
-GRANT RUOK_DELETE_TESTING_DATA, RUOK_JOBS_MANAGER, RUOK_SCHEDULER_ROLE TO testing_user;
+-- A default role for dropping, seeding, and so on
+GRANT USAGE on SCHEMA ruok to RUOK_SEED_AND_DROP;
+GRANT RUOK_SEED_AND_DROP TO testing_user;
+GRANT USAGE ON SEQUENCE ruok.job_results_id_seq to RUOK_SEED_AND_DROP;
+GRANT USAGE ON SEQUENCE ruok.jobs_id_seq to RUOK_SEED_AND_DROP;
+DROP POLICY IF EXISTS testing_user_delete_job_results ON ruok.job_results;
+CREATE POLICY testing_user_delete_job_results ON ruok.job_results FOR DELETE TO RUOK_SEED_AND_DROP USING (true);
+DROP POLICY IF EXISTS testing_user_insert_job_results ON ruok.job_results;
+CREATE POLICY testing_user_insert_job_results ON ruok.job_results FOR INSERT TO RUOK_SEED_AND_DROP WITH CHECK (true);
+
+DROP POLICY IF EXISTS testing_user_delete_jobs ON ruok.jobs;
+CREATE POLICY testing_user_delete_jobs ON ruok.jobs FOR DELETE TO RUOK_SEED_AND_DROP USING (true);
+DROP POLICY IF EXISTS testing_user_insert_jobs ON ruok.jobs;
+CREATE POLICY testing_user_insert_jobs ON ruok.jobs FOR INSERT TO RUOK_SEED_AND_DROP WITH CHECK (true);
+
+
+-- A role to login as application1
+DO
+$do$
+BEGIN
+   IF EXISTS (
+      SELECT FROM pg_catalog.pg_roles
+      WHERE rolname = 'application1') THEN
+      RAISE NOTICE 'Role "application1" already exists. Skipping.';
+   ELSE
+      BEGIN   -- nested block
+        CREATE ROLE application1 WITH LOGIN PASSWORD 'password';
+      EXCEPTION
+         WHEN duplicate_object THEN
+            RAISE NOTICE 'Role "application1" was just created by a concurrent transaction. Skipping.';
+      END;
+   END IF;
+END
+$do$;
+GRANT RUOK_SCHEDULER_ROLE TO application1;
+
+
+-- A role to login as job_manager
+DO
+$do$
+BEGIN
+   IF EXISTS (
+      SELECT FROM pg_catalog.pg_roles
+      WHERE rolname = 'job_manager_1') THEN
+      RAISE NOTICE 'Role "application1" already exists. Skipping.';
+   ELSE
+      BEGIN   -- nested block
+        CREATE ROLE job_manager_1 WITH LOGIN PASSWORD 'password';
+      EXCEPTION
+         WHEN duplicate_object THEN
+            RAISE NOTICE 'Role "job_manager_1" was just created by a concurrent transaction. Skipping.';
+      END;
+   END IF;
+END
+$do$;
+GRANT RUOK_SCHEDULER_ROLE TO job_manager_1;

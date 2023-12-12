@@ -1,3 +1,4 @@
+CREATE ROLE admin;  -- Administrator
 
 -- Create table for Jobs
 CREATE TABLE IF NOT EXISTS ruok.jobs (
@@ -27,6 +28,10 @@ CREATE TABLE IF NOT EXISTS ruok.jobs (
 	deleted_at bigint
 );
 
+ALTER TABLE ruok.jobs ENABLE ROW LEVEL SECURITY;
+CREATE POLICY admin_all_jobs ON ruok.jobs TO admin USING (true) WITH CHECK (true);
+
+
 -- Create table for Job Executions
 CREATE TABLE IF NOT EXISTS ruok.job_results (
 	id bigserial PRIMARY KEY,
@@ -49,22 +54,5 @@ CREATE TABLE IF NOT EXISTS ruok.job_results (
 	deleted_at bigint
 );
 
-
-
--- Create role for scheduler
-CREATE ROLE RUOK_SCHEDULER_ROLE WITH NOLOGIN;
-GRANT USAGE ON SCHEMA ruok to RUOK_SCHEDULER_ROLE;
-GRANT SELECT,UPDATE ON ruok.jobs to RUOK_SCHEDULER_ROLE;
-GRANT SELECT,INSERT ON ruok.job_results to RUOK_SCHEDULER_ROLE;
-GRANT EXECUTE ON FUNCTION ruok.get_ssl_conn_version(text) to RUOK_SCHEDULER_ROLE;
-GRANT EXECUTE ON FUNCTION ruok.micro_unix_now() to RUOK_SCHEDULER_ROLE;
-
-CREATE ROLE RUOK_JOBS_MANAGER WITH NOLOGIN;
-GRANT SELECT,UPDATE,INSERT,DELETE ON ruok.jobs to RUOK_JOBS_MANAGER;
-GRANT SELECT,INSERT ON ruok.job_results to RUOK_JOBS_MANAGER;
-GRANT EXECUTE ON FUNCTION ruok.get_ssl_conn_version(text) to RUOK_JOBS_MANAGER;
-GRANT EXECUTE ON FUNCTION ruok.micro_unix_now() to RUOK_JOBS_MANAGER;
-GRANT EXECUTE ON FUNCTION pg_notify(text, text) to RUOK_JOBS_MANAGER;
-
-
-
+ALTER TABLE ruok.job_results ENABLE ROW LEVEL SECURITY;
+CREATE POLICY admin_all_job_results ON ruok.jobs TO admin USING (true) WITH CHECK (true);
