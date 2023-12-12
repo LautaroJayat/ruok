@@ -17,13 +17,48 @@ BEGIN
 END
 $do$;
 
+
 GRANT USAGE ON SCHEMA ruok to RUOK_SCHEDULER_ROLE;
-GRANT SELECT,UPDATE ON ruok.jobs to RUOK_SCHEDULER_ROLE;
+
+GRANT SELECT,INSERT,UPDATE ON ruok.jobs to RUOK_SCHEDULER_ROLE;
 GRANT SELECT,INSERT ON ruok.job_results to RUOK_SCHEDULER_ROLE;
+
 GRANT USAGE ON SEQUENCE ruok.job_results_id_seq to RUOK_SCHEDULER_ROLE;
 GRANT USAGE ON SEQUENCE ruok.jobs_id_seq to RUOK_SCHEDULER_ROLE;
+
 GRANT EXECUTE ON FUNCTION ruok.get_ssl_conn_version(text) to RUOK_SCHEDULER_ROLE;
 GRANT EXECUTE ON FUNCTION ruok.micro_unix_now() to RUOK_SCHEDULER_ROLE;
+
+DROP POLICY IF EXISTS scheduler_select_jobs ON ruok.jobs; 
+CREATE POLICY scheduler_select_jobs ON ruok.jobs FOR SELECT TO RUOK_SCHEDULER_ROLE USING (
+	(
+      claimed_by IS null 
+      AND 
+      jobs.status = 'pending to be claimed'
+   )
+   OR	claimed_by = current_setting('application_name')
+);
+
+DROP POLICY IF EXISTS scheduler_update_jobs ON ruok.jobs; 
+CREATE POLICY scheduler_update_jobs ON ruok.jobs FOR UPDATE TO RUOK_SCHEDULER_ROLE USING (
+	(
+      claimed_by IS null 
+      AND 
+      jobs.status = 'pending to be claimed'
+   )
+   OR	claimed_by = current_setting('application_name')
+);
+
+DROP POLICY IF EXISTS scheduler_insert_jobs ON ruok.jobs; 
+CREATE POLICY scheduler_insert_jobs ON ruok.jobs FOR INSERT TO RUOK_SCHEDULER_ROLE WITH CHECK (true);
+
+DROP POLICY IF EXISTS scheduler_insert_job_results ON ruok.job_results; 
+CREATE POLICY scheduler_insert_job_results ON ruok.job_results FOR INSERT TO RUOK_SCHEDULER_ROLE WITH CHECK (true);
+
+DROP POLICY IF EXISTS scheduler_select_job_results ON ruok.job_results; 
+CREATE POLICY scheduler_select_job_results ON ruok.job_results FOR SELECT TO RUOK_SCHEDULER_ROLE USING (
+	claimed_by = current_setting('application_name')
+);
 
 
 DO
@@ -51,6 +86,21 @@ GRANT USAGE ON SEQUENCE ruok.jobs_id_seq to RUOK_JOBS_MANAGER;
 GRANT EXECUTE ON FUNCTION ruok.get_ssl_conn_version(text) to RUOK_JOBS_MANAGER;
 GRANT EXECUTE ON FUNCTION ruok.micro_unix_now() to RUOK_JOBS_MANAGER;
 GRANT EXECUTE ON FUNCTION pg_notify(text, text) to RUOK_JOBS_MANAGER;
+
+DROP POLICY IF EXISTS jobs_manager_insert_jobs ON ruok.jobs;
+CREATE POLICY jobs_manager_insert_jobs ON ruok.jobs FOR INSERT TO RUOK_JOBS_MANAGER WITH CHECK (true);
+
+DROP POLICY IF EXISTS jobs_manager_select_jobs ON ruok.jobs;
+CREATE POLICY jobs_manager_select_jobs ON ruok.jobs FOR SELECT TO RUOK_JOBS_MANAGER USING (true);
+
+DROP POLICY IF EXISTS jobs_manager_update_jobs ON ruok.jobs;
+CREATE POLICY jobs_manager_update_jobs ON ruok.jobs FOR UPDATE TO RUOK_JOBS_MANAGER USING (true);
+
+DROP POLICY IF EXISTS jobs_manager_select_job_results ON ruok.job_results;
+CREATE POLICY jobs_manager_select_job_results ON ruok.job_results FOR SELECT TO RUOK_JOBS_MANAGER USING (true);
+
+
+
 
 
 

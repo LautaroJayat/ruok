@@ -30,6 +30,8 @@ INSERT INTO ruok.jobs (
 
 func Seed() {
 	cfg := config.FromEnvs()
+	// use a testing role with all privileges
+	cfg.User = "testing_user"
 	s, close := NewStorage(&cfg)
 	defer close()
 	ctx := context.Background()
@@ -54,6 +56,8 @@ var dropJobResultsQuery string = "delete from ruok.job_results"
 
 func Drop() {
 	cfg := config.FromEnvs()
+	// use a testing role with all privileges
+	cfg.User = "testing_user"
 	s, close := NewStorage(&cfg)
 	defer close()
 	ctx := context.Background()
