@@ -33,6 +33,11 @@ func TestValidUrl(t *testing.T) {
 			input: "http://:8080",
 			pass:  false,
 		},
+		{
+			name:  "localUrl",
+			input: "http://127.0.0.1:43055",
+			pass:  true,
+		},
 	}
 
 	for _, tt := range tests {
