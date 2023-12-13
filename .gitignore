@@ -7,3 +7,4 @@ static-out
 static
 dump.json
 ruok
+*.log
