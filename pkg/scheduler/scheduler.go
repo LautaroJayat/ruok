@@ -50,9 +50,8 @@ func NewScheduler(s storage.SchedulerStorage, am *alerting.AlertManager, jobList
 	return &Scheduler{l: jobList, storage: s, parser: cronParser.Parse, alertManager: am}
 }
 
+// make sure calling context already has the sched.l.lock locked
 func (sched *Scheduler) initJobList(j []*jobs.Job, notifier chan int) {
-	sched.l.lock.Lock()
-	defer sched.l.lock.Unlock()
 	for _, job := range j {
 		err := job.InitExpression(sched.parser)
 		if err != nil {
@@ -67,8 +66,8 @@ func (sched *Scheduler) initJobList(j []*jobs.Job, notifier chan int) {
 		sched.l.list[job.Id] = job
 		go job.Schedule(notifier)
 		job.Scheduled = true
+		config.AppStats.ClaimedJobs++
 	}
-	config.AppStats.ClaimedJobs = len(sched.l.list)
 }
 
 func (sched *Scheduler) checkForNewJobs(notifier chan int) {
@@ -131,14 +130,18 @@ func (sched *Scheduler) Start(signalsCh chan os.Signal) int {
 	sched.notifier = make(chan int, len(sched.l.list))
 
 	log.Info().Msg("About to init all jobs")
+
+	sched.l.lock.Lock()
 	sched.initJobList(j, sched.notifier)
+	sched.l.lock.Unlock()
 
 	log.Info().Msg("About to spawn 'listen for job updates' gorutine")
 	updatedJobsNotificationsch := make(chan int, 100)
 	updatesListenerCtx, cancelUpdateListener := context.WithCancel(context.Background())
 	sched.storage.ListenForChanges(updatedJobsNotificationsch, updatesListenerCtx)
 
-	log.Info().Msg("starting new ticker for poller")
+	log.Info().Msgf("starting new ticker for poller: %f seconds\n", config.PollingInterval().Seconds())
+
 	pollSignal := time.NewTicker(config.PollingInterval())
 
 	for {
