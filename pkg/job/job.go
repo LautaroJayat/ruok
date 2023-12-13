@@ -112,7 +112,6 @@ func (j *Job) Schedule(notifier chan int) string {
 		j.LastExecution = executionTime
 		j.LastMessage = result.Message
 		j.LastStatusCode = result.Status
-		j.Succeeded = "error"
 		if j.IsSuccess(result.Status) {
 			j.Succeeded = "ok"
 			j.OnSuccess()
