@@ -23,7 +23,12 @@ stop-db-tls:
 	docker compose -f Dockercompose.dev.tls.yml down
 
 test:
-	go test -p 1 -count=1 ./...
+	go test -p 1 -count=1 ./pkg/... -v
+
+test-e2e:
+	make build
+	go test -p 1 -count=1 ./e2e/... -v
+	make clean
 
 run:
 	go run cmd/main.go start
@@ -61,3 +66,5 @@ clean:
 	rm -f ssl/*.pem
 	rm -f *.pem
 	rm -f ssl/*.conf
+	rm -f e2e/*.log
+	rm -f ./ruok
