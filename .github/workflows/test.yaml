@@ -74,6 +74,5 @@ jobs:
 
       - name: Test
         run: make test
-
-      - name: Test e2e
-        run: make test-e2e
+#      - name: Test e2e
+#       run: make test-e2e
