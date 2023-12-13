@@ -35,6 +35,8 @@ jobs:
 
   test:
     name: Test
+    needs:
+      - lint
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -50,7 +52,6 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -74,5 +75,6 @@ jobs:
 
       - name: Test
         run: make test
-#      - name: Test e2e
-#       run: make test-e2e
+
+      - name: Test e2e
+        run: make test-e2e
