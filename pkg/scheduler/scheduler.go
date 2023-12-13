@@ -44,10 +44,11 @@ type Scheduler struct {
 	parser       cronParser.ParseFn
 	notifier     chan int
 	alertManager *alerting.AlertManager
+	off          bool
 }
 
 func NewScheduler(s storage.SchedulerStorage, am *alerting.AlertManager, jobList *JobsList) *Scheduler {
-	return &Scheduler{l: jobList, storage: s, parser: cronParser.Parse, alertManager: am}
+	return &Scheduler{l: jobList, storage: s, parser: cronParser.Parse, alertManager: am, off: true}
 }
 
 // make sure calling context already has the sched.l.lock locked
@@ -88,7 +89,6 @@ func (sched *Scheduler) Drain() error {
 	defer sched.l.lock.Unlock()
 	for _, v := range sched.l.list {
 		v.Scheduled = false
-		v.AbortChannel <- struct{}{}
 		close(v.AbortChannel)
 		releaseList = append(releaseList, v)
 	}
@@ -122,6 +122,7 @@ func (sched *Scheduler) DumpToFile(w io.Writer) error {
 }
 
 func (sched *Scheduler) Start(signalsCh chan os.Signal) int {
+	sched.off = false
 	log.Info().Msg("about to get available jobs to start working :)")
 
 	j := sched.storage.GetAvailableJobs(sched.l.AvailableSpace())
@@ -143,7 +144,9 @@ func (sched *Scheduler) Start(signalsCh chan os.Signal) int {
 	log.Info().Msgf("starting new ticker for poller: %f seconds\n", config.PollingInterval().Seconds())
 
 	pollSignal := time.NewTicker(config.PollingInterval())
+	exitcode := 0
 
+mainloop:
 	for {
 		select {
 		case <-pollSignal.C:
@@ -158,10 +161,30 @@ func (sched *Scheduler) Start(signalsCh chan os.Signal) int {
 			sched.refreshJob(updatedJobId)
 
 		case <-signalsCh:
+			if sched.off {
+				log.Info().Msg("we are already shutting down")
+			}
 			// TODO: if we couldn't release we should push an alert to some channel
-			return sched.shutDown(pollSignal, cancelUpdateListener, signalsCh)
+			exitcode = sched.shutDown(pollSignal, cancelUpdateListener, signalsCh)
+			break mainloop
 		}
 	}
+	defer close(sched.notifier)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
+	defer cancel()
+
+drainloop:
+	for {
+		select {
+		case i := <-sched.notifier:
+			log.Debug().Msgf("done with %d", i)
+		case <-ctx.Done():
+			log.Debug().Msg("timeout!")
+			break drainloop
+		}
+	}
+	log.Info().Msg("ready to end scheduler")
+	return exitcode
 }
 
 // 1. Closes the poll signal, triggers the cancel for the notifications listener, closes the job done notifier.
@@ -174,17 +197,23 @@ func (sched *Scheduler) shutDown(
 	cancelUpdateListener context.CancelFunc,
 	signalsCh chan os.Signal,
 ) int {
+	sched.off = true
 
-	log.Info().Msg("About to drain because we got a signal")
+	log.Info().Msg("about to stop polling ticker")
 	pollSignal.Stop()
+
+	log.Info().Msg("About to stop listening for changes")
 	sched.storage.StopListeningForChanges()
+
+	log.Info().Msg("About to close jobs updates notifications channel")
 	cancelUpdateListener()
-	close(sched.notifier)
+
+	log.Info().Msg("About to close signals channel")
 	close(signalsCh)
 
+	log.Info().Msg("About to drain because we got a signal")
 	err := sched.Drain()
 	if err != nil {
-
 		log.Error().Err(err).Msg("there was a problem with the database, trying to dump jobs into a file")
 		f, err := os.Create("./dump.json")
 		if err != nil {
@@ -205,6 +234,9 @@ func (sched *Scheduler) shutDown(
 }
 
 func (sched *Scheduler) reschedule(doneJobId int) {
+	if sched.off {
+		return
+	}
 	sched.l.lock.Lock()
 	defer sched.l.lock.Unlock()
 	log.Info().Msgf("job %v done!", doneJobId)
@@ -218,6 +250,9 @@ func (sched *Scheduler) reschedule(doneJobId int) {
 }
 
 func (sched *Scheduler) refreshJob(jobId int) {
+	if sched.off {
+		return
+	}
 	// Lock for a simple check
 	sched.l.lock.Lock()
 	j, ok := sched.l.list[jobId]
