@@ -135,14 +135,18 @@ func parseMaxJobs(cfg *Configs) {
 	}
 }
 
-func ParsePollInterval(cfg *Configs) {
-	interval, err := strconv.ParseInt(os.Getenv(POLL_INTERVAL_SECONDS), 10, 64)
+func ParsePollInterval() time.Duration {
+	intervalString := os.Getenv(POLL_INTERVAL_SECONDS)
+	intervalString = strings.Trim(intervalString, " ")
+	intervalString = strings.Trim(intervalString, "\n")
+	interval, err := strconv.ParseInt(intervalString, 10, 64)
+	log.Info().Msgf("config.PollingInterval() %d %q", interval, os.Getenv(POLL_INTERVAL_SECONDS))
 	if err != nil {
 		log.Error().Err(err).Msgf("could not parse POLLING_INTERVAL_SECONDS env defaulting to %f seconds", defaultPollInterval.Seconds())
-		globalConfigs.PollInterval = defaultPollInterval
-	} else {
-		globalConfigs.PollInterval = time.Second * time.Duration(interval)
+		return defaultPollInterval
 	}
+	return time.Second * time.Duration(interval)
+
 }
 
 func getEnvOrDefault(env string, defaultValue string) string {
@@ -240,7 +244,7 @@ func FromEnvs() Configs {
 			AppName:       validateAppNameOrFail(),
 			SSLConfigs:    getSSLConfigs(),
 			MaxJobs:       defaultMaxJobs,
-			PollInterval:  defaultPollInterval,
+			PollInterval:  ParsePollInterval(),
 			AlertChannels: parseAlertChannels(),
 		}
 	}
