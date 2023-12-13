@@ -1,0 +1,79 @@
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go 1.21.x
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21.x'
+
+      - name: Check Go version
+        run: go version
+
+      - name: Check gofmt
+        run: |
+          set -x
+          if [ ! -z $(gofmt -l .) ]
+          then
+            echo 'Please make sure to run "gofmt -s -w ." before commit :)' && exit 1
+          fi
+
+      - name: Check go vet
+      - run: |
+          set -x
+          go vet ./...
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: password
+          POSTGRES_USER: user
+          POSTGRES_DB: db1
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go 1.21.x
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21.x'
+
+      - name: Check Go version
+        run: go version
+
+      - name: Setup db admin .env
+        run: echo "DB_USER=user" > .env
+
+      - name: Setup DB
+        run: make migrate
+
+      - name: setup scheduler user .env
+        run: echo "DB_USER=application1" > .env
+
+      - name: Test
+        run: make test
+
+      - name: Test e2e
+        run: make test-e2e
