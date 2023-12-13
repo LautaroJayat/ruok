@@ -63,7 +63,8 @@ func makeAlertHandler(results *mapping) gin.HandlerFunc {
 }
 
 func setupTestServer(results *mapping) *httptest.Server {
-	router := gin.Default()
+	router := gin.New()
+	router.Use(gin.Recovery())
 	router.GET("/test", makeTestHandler(results))
 	router.POST("/alert", makeAlertHandler(results))
 
@@ -95,7 +96,7 @@ Then it will try to create users*jobsPeruser number of jobs.
 
 Then it will compare results the ones in the DB
 */
-func TestCreateMaxJobs(t *testing.T) {
+func TestCreateMaxJobs_all_http_alerts(t *testing.T) {
 	storage.Drop()
 	defer storage.Drop()
 	users := 100
