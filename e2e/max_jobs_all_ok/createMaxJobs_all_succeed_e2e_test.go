@@ -44,7 +44,8 @@ func makeTestHandler(results *mapping) gin.HandlerFunc {
 }
 
 func setupTestServer(results *mapping) *httptest.Server {
-	router := gin.Default()
+	router := gin.New()
+	router.Use(gin.Recovery())
 	router.GET("/test", makeTestHandler(results))
 	thirdPartyServer := httptest.NewServer(router)
 	return thirdPartyServer
@@ -72,7 +73,7 @@ Then it will try to create users*jobsPeruser number of jobs.
 
 It will register all executions and then compare results the ones in the DB
 */
-func TestCreateMaxJobs(t *testing.T) {
+func TestCreateMaxJobs_all_succeed(t *testing.T) {
 	storage.Drop()
 	defer storage.Drop()
 	users := 100

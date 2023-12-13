@@ -61,7 +61,7 @@ func TestHTTPAlert(t *testing.T) {
 			name:     "Invalid Request - Unreachable Url",
 			useOkUrl: false,
 			alertInput: m.AlertInput{
-				Url:    "http://example.com",
+				Url:    "http://bad.unreachable.example.com",
 				Method: "GET",
 			},
 			expectedResult: "",

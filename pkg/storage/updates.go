@@ -47,10 +47,12 @@ func (s *SQLStorage) ListenForChanges(jobIDUpdatedCh chan int, ctx context.Conte
 			notification, err := conn.Conn().WaitForNotification(ctx)
 			if err != nil {
 				if ctx.Err() != nil {
-					log.Info().Msg("done listening for notifications")
+					log.Info().Msgf("done listening for notifications. msg: %q", ctx.Err().Error())
+					close(jobIDUpdatedCh)
 					break
 				}
 				log.Error().Err(err).Msgf("an error occurred while listening into %q channel", ownChannel)
+				close(jobIDUpdatedCh)
 				break
 			}
 			if notification.Payload == "release" {
@@ -68,6 +70,7 @@ func (s *SQLStorage) ListenForChanges(jobIDUpdatedCh chan int, ctx context.Conte
 			}
 			jobIDUpdatedCh <- int(id)
 		}
+		log.Debug().Msg("exiting from listening updates gorutine")
 	}(jobIDUpdatedCh, ctx)
 
 	<-ready

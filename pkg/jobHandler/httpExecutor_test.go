@@ -69,7 +69,7 @@ func TestHTTPExecutor_ErrorSendingRequest(t *testing.T) {
 	// Create a Job with a server that always returns an error
 	testJob := &job.Job{
 		HttpMethod: "GET",
-		Endpoint:   "https://example.com", // This URL will always return an error
+		Endpoint:   "https://bad.unreachable.example.com", // This URL will always return an error
 	}
 
 	// Call the HTTPExecutor function
