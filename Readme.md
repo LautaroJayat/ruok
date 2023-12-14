@@ -1,7 +1,9 @@
 # RUOK Scheduler
 
 ![Testing](https://github.com/back-end-labs/ruok/actions/workflows/test.yaml/badge.svg?event=push&branch=main)
+[![Go Report Card](https://goreportcard.com/badge/github.com/back-end-labs/ruok)](https://goreportcard.com/report/github.com/helm/helm)
 ![Version](https://img.shields.io/badge/version-unstable-blue)
+[![License](https://img.shields.io/github/license/back-end-labs/ruok)](/LICENSE)
 
 <div align="center">
     <img  src="./assets/horizontal_logo.png" alt="RUOK Logo" />
