@@ -5,6 +5,7 @@ main
 *.conf
 static-out
 static
+!pkg/api/static
 dump.json
 ruok
 *.log
