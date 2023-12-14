@@ -192,7 +192,7 @@ func getSSLConfigs() SSLConfig {
 	if tlsConfigs.SSLMode == DISABLE_SSL {
 		return tlsConfigs
 	}
-	// Assuming there wont be a "/app" folder in "/"
+	// Assuming there wont be an "/app" folder in "/"
 	// Just to be able to develop and test outside docker
 	if !withinContainer(base) {
 		base = generateLocalBasePath()
