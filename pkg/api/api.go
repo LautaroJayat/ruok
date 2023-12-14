@@ -87,6 +87,7 @@ func CreateRouter(apiStorage storage.APIStorage) *gin.Engine {
 		// Serve the index
 		if path == "/index.html" || path == "/" || path == "" {
 			c.Writer.Header().Add("Cache-Control", "no-cache")
+			c.Writer.WriteHeader(http.StatusOK)
 			c.Writer.Write(indexBytes)
 			return
 		}
