@@ -2,7 +2,7 @@ import { lazy, Suspense } from 'react';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { Route, Routes } from 'react-router-dom';
 import routes from './routes/index';
-import Wellcome from './pages/Wellcome';
+import Welcome from './pages/Welcome';
 const DefaultLayout = lazy(() => import('./layouts/default'));
 
 function Loading() {
@@ -23,7 +23,7 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <Routes>
           <Route element={<DefaultLayout />}>
-            <Route index element={<Wellcome />} />
+            <Route index element={<Welcome />} />
             {routes.map((r) => {
               return (
                 <Route

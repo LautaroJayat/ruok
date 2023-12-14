@@ -2,7 +2,7 @@ import { Container, Box, typographyClasses, AspectRatio, Button, Card, Typograph
 import FavoriteRoundedIcon from '@mui/icons-material/FavoriteRounded';
 import { useNavigate } from 'react-router-dom';
 
-export const WellcomeMsg = () => {
+export const WelcomeMsg = () => {
   const navigate = useNavigate();
   return (
     <>
@@ -79,7 +79,7 @@ export default () => {
           },
         })}
       >
-        <WellcomeMsg />
+        <WelcomeMsg />
       </Box>
       <AspectRatio
         ratio={3 / 4}
