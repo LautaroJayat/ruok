@@ -1,6 +1,7 @@
 # RUOK Scheduler
 
 ![Testing](https://github.com/back-end-labs/ruok/actions/workflows/test.yaml/badge.svg?event=push&branch=main)
+![Version](https://img.shields.io/badge/version-unstable-blue)
 
 <div align="center">
     <img  src="./assets/horizontal_logo.png" alt="RUOK Logo" />
