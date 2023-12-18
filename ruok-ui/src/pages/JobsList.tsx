@@ -19,6 +19,7 @@ import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 type rowData = {
   key?: number;
   id: number;
+  name: string;
   endpoint: string;
   method: string;
   expression: string;
@@ -47,10 +48,11 @@ const StatusChip = ({ lastStatus }: { lastStatus: 'ok' | 'error' }) => {
   );
 };
 
-const Row = ({ id, endpoint, method, expression, lastExecution, lastStatus, createdAt }: rowData) => {
+const Row = ({ id, name, endpoint, method, expression, lastExecution, lastStatus, createdAt }: rowData) => {
   return (
     <tr style={{ width: '100%' }}>
       <td>{id}</td>
+      <td>{name}</td>
       <td>
         <Tooltip title={endpoint} variant="outlined">
           <span>{endpoint.substring(0, 20)}...</span>
@@ -76,6 +78,7 @@ const Headers = () => {
   return (
     <tr>
       <th style={{ width: 80, minWidth: 80, padding: '12px 6px' }}>Job Id</th>
+      <th style={{ minWidth: 180, padding: '12px 6px' }}>Name</th>
       <th style={{ minWidth: 180, padding: '12px 6px' }}>Endpoint</th>
       <th style={{ width: 80, minWidth: 80, padding: '12px 6px' }}>Method</th>
       <th style={{ minWidth: 140, padding: '12px 6px' }}>CronExpression</th>
@@ -198,6 +201,7 @@ const JobList = () => {
                   <Row
                     key={i}
                     id={e.id}
+                    name={e.name}
                     endpoint={e.endpoint}
                     method={e.httpmethod}
                     expression={e.cronexp}
