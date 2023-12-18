@@ -11,6 +11,7 @@ import (
 
 type UpdateJobInput struct {
 	Id              int               `json:"id"`
+	Name            string            `json:"name"`
 	CronExpString   string            `json:"cronexp"`
 	MaxRetries      int               `json:"maxRetries"`
 	Endpoint        string            `json:"endpoint"`
@@ -26,6 +27,7 @@ type UpdateJobInput struct {
 
 var updateJobQuery = `
 UPDATE ruok.jobs SET 
+	job_name = $1,
 	cron_exp_string = $2,
 	endpoint = $3,
 	httpmethod = $4,
@@ -38,7 +40,7 @@ UPDATE ruok.jobs SET
 	alert_headers_string = $11,
 	alert_payload = $12,
 	updated_at = ruok.micro_unix_now()
-WHERE id = $1;
+WHERE id = $13;
 `
 
 func (sqls *SQLStorage) UpdateJob(j UpdateJobInput) error {
@@ -69,7 +71,7 @@ func (sqls *SQLStorage) UpdateJob(j UpdateJobInput) error {
 	}
 
 	_, err = tx.Exec(ctx, updateJobQuery,
-		j.Id,
+		j.Name,
 		j.CronExpString,
 		j.Endpoint,
 		j.HttpMethod,
@@ -81,6 +83,7 @@ func (sqls *SQLStorage) UpdateJob(j UpdateJobInput) error {
 		j.AlertMethod,
 		alertHeadersString,
 		alertPayload,
+		j.Id,
 	)
 
 	if err != nil {

@@ -27,6 +27,7 @@ func TestCreateJob(t *testing.T) {
 		{
 			name: "ValidInput",
 			input: storage.CreateJobInput{
+				Name:            "Job 1",
 				CronExpString:   "*/1 * * * *",
 				MaxRetries:      3,
 				Endpoint:        "http://example.com",
@@ -39,6 +40,7 @@ func TestCreateJob(t *testing.T) {
 		{
 			name: "ValidInputWithAlerts",
 			input: storage.CreateJobInput{
+				Name:            "Job 1",
 				CronExpString:   "*/1 * * * *",
 				MaxRetries:      3,
 				Endpoint:        "http://example.com",
@@ -54,8 +56,21 @@ func TestCreateJob(t *testing.T) {
 			expectedStatus: http.StatusCreated,
 		},
 		{
+			name: "InvalidMissingName",
+			input: storage.CreateJobInput{
+				CronExpString:   "*/1 * * * *",
+				MaxRetries:      3,
+				Endpoint:        "http://example.com",
+				HttpMethod:      "GET",
+				SuccessStatuses: []int{200},
+			},
+			expectedError:  true,
+			expectedStatus: http.StatusBadRequest,
+		},
+		{
 			name: "InvalidCronExpression",
 			input: storage.CreateJobInput{
+				Name:            "Job 1",
 				CronExpString:   "invalid-expression",
 				MaxRetries:      3,
 				Endpoint:        "http://example.com",
@@ -68,6 +83,7 @@ func TestCreateJob(t *testing.T) {
 		{
 			name: "MissingCronExpression",
 			input: storage.CreateJobInput{
+				Name:            "Job 1",
 				MaxRetries:      3,
 				Endpoint:        "http://example.com",
 				HttpMethod:      "GET",
@@ -79,6 +95,7 @@ func TestCreateJob(t *testing.T) {
 		{
 			name: "MissingEndpoint",
 			input: storage.CreateJobInput{
+				Name:            "Job 1",
 				CronExpString:   "*/1 * * * *",
 				MaxRetries:      3,
 				HttpMethod:      "GET",
@@ -90,6 +107,7 @@ func TestCreateJob(t *testing.T) {
 		{
 			name: "InvalidEndpointURL",
 			input: storage.CreateJobInput{
+				Name:            "Job 1",
 				CronExpString:   "*/1 * * * *",
 				MaxRetries:      3,
 				Endpoint:        "invalid-url",
@@ -102,6 +120,7 @@ func TestCreateJob(t *testing.T) {
 		{
 			name: "MissingHttpMethod",
 			input: storage.CreateJobInput{
+				Name:            "Job 1",
 				CronExpString:   "*/1 * * * *",
 				MaxRetries:      3,
 				Endpoint:        "http://example.com",
@@ -113,6 +132,7 @@ func TestCreateJob(t *testing.T) {
 		{
 			name: "InvalidMethod",
 			input: storage.CreateJobInput{
+				Name:            "Job 1",
 				CronExpString:   "*/1 * * * *",
 				MaxRetries:      3,
 				Endpoint:        "http://example.com",
@@ -125,6 +145,7 @@ func TestCreateJob(t *testing.T) {
 		{
 			name: "MissingSuccessStatuses",
 			input: storage.CreateJobInput{
+				Name:          "Job 1",
 				CronExpString: "*/1 * * * *",
 				MaxRetries:    3,
 				Endpoint:      "http://example.com",
@@ -136,6 +157,7 @@ func TestCreateJob(t *testing.T) {
 		{
 			name: "InvalidStrategy",
 			input: storage.CreateJobInput{
+				Name:            "Job 1",
 				CronExpString:   "*/1 * * * *",
 				MaxRetries:      3,
 				Endpoint:        "http://example.com",
@@ -151,6 +173,7 @@ func TestCreateJob(t *testing.T) {
 		{
 			name: "InvalidAlertEndpoint",
 			input: storage.CreateJobInput{
+				Name:            "Job 1",
 				CronExpString:   "*/1 * * * *",
 				MaxRetries:      3,
 				Endpoint:        "http://example.com",
@@ -166,6 +189,7 @@ func TestCreateJob(t *testing.T) {
 		{
 			name: "InvalidAlertMethod",
 			input: storage.CreateJobInput{
+				Name:            "Job 1",
 				CronExpString:   "*/1 * * * *",
 				MaxRetries:      3,
 				Endpoint:        "http://example.com",
@@ -181,6 +205,7 @@ func TestCreateJob(t *testing.T) {
 		{
 			name: "WithAlertButMissingMinFields",
 			input: storage.CreateJobInput{
+				Name:            "Job 1",
 				CronExpString:   "*/1 * * * *",
 				MaxRetries:      3,
 				Endpoint:        "http://example.com",

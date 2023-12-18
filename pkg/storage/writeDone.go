@@ -21,6 +21,7 @@ func (sqls *SQLStorage) WriteDone(j *job.Job) error {
 	}
 	_, err = tx.Exec(ctx, `
 	INSERT INTO ruok.job_results (
+		job_name,
 		job_id,
 		cron_exp_string,
 		endpoint,
@@ -35,8 +36,8 @@ func (sqls *SQLStorage) WriteDone(j *job.Job) error {
 		status,
 		claimed_by,
 		succeeded
-	) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14);
-	`, j.Id, j.CronExpString, j.Endpoint, j.HttpMethod, j.MaxRetries, j.LastExecution.UnixMicro(),
+	) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15);
+	`, j.Name, j.Id, j.CronExpString, j.Endpoint, j.HttpMethod, j.MaxRetries, j.LastExecution.UnixMicro(),
 		j.ShouldExecuteAt.UnixMicro(), j.LastResponseAt.UnixMicro(), j.LastMessage, j.LastStatusCode,
 		j.SuccessStatuses, j.Status, j.ClaimedBy, j.Succeeded,
 	)

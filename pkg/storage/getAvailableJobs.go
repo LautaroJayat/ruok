@@ -24,6 +24,7 @@ func (sqls *SQLStorage) GetAvailableJobs(limit int) []*job.Job {
 	rows, err := tx.Query(ctx, `
 SELECT
 	id,
+	job_name,
 	cron_exp_string,
 	endpoint,
 	httpmethod,
@@ -57,6 +58,7 @@ SELECT
 
 	for rows.Next() {
 		var Id int
+		var Name string
 		var CronExpString string
 		var Endpoint string
 		var HttpMethod string
@@ -78,6 +80,7 @@ SELECT
 
 		err = rows.Scan(
 			&Id,
+			&Name,
 			&CronExpString,
 			&Endpoint,
 			&HttpMethod,
@@ -137,6 +140,7 @@ SELECT
 
 		j := &job.Job{
 			Id:              Id,
+			Name:            Name,
 			CronExpString:   CronExpString,
 			Endpoint:        Endpoint,
 			HttpMethod:      HttpMethod,

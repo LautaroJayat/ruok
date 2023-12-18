@@ -58,6 +58,7 @@ func TestValidateUpdateFields(t *testing.T) {
 		{
 			name: "ValidInput",
 			input: storage.UpdateJobInput{
+				Name:            "Job 1",
 				Id:              1,
 				CronExpString:   "*/1 * * * *",
 				MaxRetries:      3,
@@ -69,8 +70,22 @@ func TestValidateUpdateFields(t *testing.T) {
 			expectedList:  nil,
 		},
 		{
+			name: "MissingName",
+			input: storage.UpdateJobInput{
+				Id:              1,
+				CronExpString:   "*/1 * * * *",
+				MaxRetries:      3,
+				Endpoint:        "http://example.com",
+				HttpMethod:      "GET",
+				SuccessStatuses: []int{200},
+			},
+			expectedError: true,
+			expectedList:  []string{"must provide a name"},
+		},
+		{
 			name: "MissingID",
 			input: storage.UpdateJobInput{
+				Name:            "Job 1",
 				CronExpString:   "*/1 * * * *",
 				MaxRetries:      3,
 				Endpoint:        "http://example.com",
@@ -83,6 +98,7 @@ func TestValidateUpdateFields(t *testing.T) {
 		{
 			name: "InvalidCronExpression",
 			input: storage.UpdateJobInput{
+				Name:            "Job 1",
 				Id:              1,
 				CronExpString:   "invalid-expression",
 				MaxRetries:      3,
@@ -96,6 +112,7 @@ func TestValidateUpdateFields(t *testing.T) {
 		{
 			name: "MissingEndpoint",
 			input: storage.UpdateJobInput{
+				Name:            "Job 1",
 				Id:              1,
 				CronExpString:   "*/1 * * * *",
 				MaxRetries:      3,
@@ -108,6 +125,7 @@ func TestValidateUpdateFields(t *testing.T) {
 		{
 			name: "InvalidEndpointURL",
 			input: storage.UpdateJobInput{
+				Name:            "Job 1",
 				Id:              1,
 				CronExpString:   "*/1 * * * *",
 				MaxRetries:      3,
@@ -121,6 +139,7 @@ func TestValidateUpdateFields(t *testing.T) {
 		{
 			name: "MissingHttpMethod",
 			input: storage.UpdateJobInput{
+				Name:            "Job 1",
 				Id:              1,
 				CronExpString:   "*/1 * * * *",
 				MaxRetries:      3,
@@ -133,6 +152,7 @@ func TestValidateUpdateFields(t *testing.T) {
 		{
 			name: "InvalidMethod",
 			input: storage.UpdateJobInput{
+				Name:            "Job 1",
 				Id:              1,
 				CronExpString:   "*/1 * * * *",
 				MaxRetries:      3,
@@ -146,6 +166,7 @@ func TestValidateUpdateFields(t *testing.T) {
 		{
 			name: "MissingSuccessStatuses",
 			input: storage.UpdateJobInput{
+				Name:          "Job 1",
 				Id:            1,
 				CronExpString: "*/1 * * * *",
 				MaxRetries:    3,
@@ -158,6 +179,7 @@ func TestValidateUpdateFields(t *testing.T) {
 		{
 			name: "InvalidStrategy",
 			input: storage.UpdateJobInput{
+				Name:            "Job 1",
 				Id:              1,
 				CronExpString:   "*/1 * * * *",
 				MaxRetries:      3,
@@ -172,6 +194,7 @@ func TestValidateUpdateFields(t *testing.T) {
 		{
 			name: "InvalidAlertEndpoint",
 			input: storage.UpdateJobInput{
+				Name:            "Job 1",
 				Id:              1,
 				CronExpString:   "*/1 * * * *",
 				MaxRetries:      3,
@@ -186,6 +209,7 @@ func TestValidateUpdateFields(t *testing.T) {
 		{
 			name: "InvalidAlertMethod",
 			input: storage.UpdateJobInput{
+				Name:            "Job 1",
 				Id:              1,
 				CronExpString:   "*/1 * * * *",
 				MaxRetries:      3,
@@ -222,6 +246,7 @@ func TestValidateCreateFields(t *testing.T) {
 		{
 			name: "ValidInput",
 			input: storage.CreateJobInput{
+				Name:            "Job 1",
 				CronExpString:   "*/1 * * * *",
 				MaxRetries:      3,
 				Endpoint:        "http://example.com",
@@ -232,8 +257,21 @@ func TestValidateCreateFields(t *testing.T) {
 			expectedList:  nil,
 		},
 		{
+			name: "MissingName",
+			input: storage.CreateJobInput{
+				CronExpString:   "*/1 * * * *",
+				MaxRetries:      3,
+				Endpoint:        "http://example.com",
+				HttpMethod:      "GET",
+				SuccessStatuses: []int{200},
+			},
+			expectedError: true,
+			expectedList:  []string{"must provide a name"},
+		},
+		{
 			name: "InvalidCronExpression",
 			input: storage.CreateJobInput{
+				Name:            "Job 1",
 				CronExpString:   "invalid-expression",
 				MaxRetries:      3,
 				Endpoint:        "http://example.com",
@@ -246,6 +284,7 @@ func TestValidateCreateFields(t *testing.T) {
 		{
 			name: "MissingEndpoint",
 			input: storage.CreateJobInput{
+				Name:            "Job 1",
 				CronExpString:   "*/1 * * * *",
 				MaxRetries:      3,
 				HttpMethod:      "GET",
@@ -257,6 +296,7 @@ func TestValidateCreateFields(t *testing.T) {
 		{
 			name: "InvalidEndpointURL",
 			input: storage.CreateJobInput{
+				Name:            "Job 1",
 				CronExpString:   "*/1 * * * *",
 				MaxRetries:      3,
 				Endpoint:        "invalid-url",
@@ -269,6 +309,7 @@ func TestValidateCreateFields(t *testing.T) {
 		{
 			name: "MissingHttpMethod",
 			input: storage.CreateJobInput{
+				Name:            "Job 1",
 				CronExpString:   "*/1 * * * *",
 				MaxRetries:      3,
 				Endpoint:        "http://example.com",
@@ -280,6 +321,7 @@ func TestValidateCreateFields(t *testing.T) {
 		{
 			name: "InvalidMethod",
 			input: storage.CreateJobInput{
+				Name:            "Job 1",
 				CronExpString:   "*/1 * * * *",
 				MaxRetries:      3,
 				Endpoint:        "http://example.com",
@@ -292,6 +334,7 @@ func TestValidateCreateFields(t *testing.T) {
 		{
 			name: "MissingSuccessStatuses",
 			input: storage.CreateJobInput{
+				Name:          "Job 1",
 				CronExpString: "*/1 * * * *",
 				MaxRetries:    3,
 				Endpoint:      "http://example.com",
@@ -303,6 +346,7 @@ func TestValidateCreateFields(t *testing.T) {
 		{
 			name: "InvalidStrategy",
 			input: storage.CreateJobInput{
+				Name:            "Job 1",
 				CronExpString:   "*/1 * * * *",
 				MaxRetries:      3,
 				Endpoint:        "http://example.com",
@@ -316,6 +360,7 @@ func TestValidateCreateFields(t *testing.T) {
 		{
 			name: "InvalidAlertEndpoint",
 			input: storage.CreateJobInput{
+				Name:            "Job 1",
 				CronExpString:   "*/1 * * * *",
 				MaxRetries:      3,
 				Endpoint:        "http://example.com",
@@ -329,6 +374,7 @@ func TestValidateCreateFields(t *testing.T) {
 		{
 			name: "InvalidAlertMethod",
 			input: storage.CreateJobInput{
+				Name:            "Job 1",
 				CronExpString:   "*/1 * * * *",
 				MaxRetries:      3,
 				Endpoint:        "http://example.com",

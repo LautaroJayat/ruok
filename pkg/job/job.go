@@ -34,6 +34,7 @@ type Handlers struct {
 }
 type Job struct {
 	Id              int                      `json:"id"`
+	Name            string                   `json:"name"`
 	CronExp         cronParser.CronExpresion `json:"-"`
 	CronExpString   string                   `json:"cronexp"`
 	LastExecution   time.Time                `json:"lastExecution"`
@@ -66,6 +67,7 @@ type Job struct {
 type JobExecution struct {
 	Id              int               `json:"id"`
 	JobId           int               `json:"jobId"`
+	Name            string            `json:"name"`
 	CronExpString   string            `json:"cronexp"`
 	LastExecution   time.Time         `json:"lastExecution"`
 	ShouldExecuteAt time.Time         `json:"shouldExecuteAt"`

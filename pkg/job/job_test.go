@@ -170,6 +170,7 @@ func TestAbortJob(t *testing.T) {
 	}
 	ch := make(chan int)
 	j := &Job{
+		Name:            "test job",
 		CronExpString:   "* * * * *",
 		Scheduled:       true,
 		AbortChannel:    make(chan struct{}),

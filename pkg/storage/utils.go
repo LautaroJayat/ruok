@@ -9,6 +9,7 @@ import (
 
 var seedQuery string = `
 INSERT INTO ruok.jobs (
+	job_name,
     cron_exp_string,
     endpoint,
     httpmethod,
@@ -16,16 +17,16 @@ INSERT INTO ruok.jobs (
     success_statuses,
     status
 ) VALUES
-    ('*/5 * * * *', 'http://localhost:8080/v1/status', 'GET', 1, '{200}',  'pending to be claimed'),
-    ('0 1 * * *', 'http://localhost:8080/v1/status', 'GET', 1, '{200}',  'pending to be claimed'),
-    ('30 2 * * *', 'http://localhost:8080/v1/status', 'GET', 1, '{200}',  'pending to be claimed'),
-    ('15 3 * * *', 'http://localhost:8080/v1/status', 'GET', 1, '{200}',  'pending to be claimed'),
-    ('0 */6 * * *', 'http://localhost:8080/v1/status', 'GET', 1, '{200}',  'pending to be claimed'),
-    ('*/10 * * * *', 'http://localhost:8080/v1/status', 'GET', 1, '{200}',  'pending to be claimed'),
-    ('45 4 * * *', 'http://localhost:8080/v1/status', 'GET', 1, '{200}',  'pending to be claimed'),
-    ('0 5 * * *', 'http://localhost:8080/v1/status', 'GET', 1, '{200}',  'pending to be claimed'),
-    ('*/15 * * * *', 'http://localhost:8080/v1/status', 'GET', 1, '{200}',  'pending to be claimed'),
-    ('0 6 * * *', 'http://localhost:8080/v1/status', 'GET', 1, '{200}',  'pending to be claimed');
+    ('job 1', '*/5 * * * *', 'http://localhost:8080/v1/status', 'GET', 1, '{200}',  'pending to be claimed'),
+    ('job 2', '0 1 * * *', 'http://localhost:8080/v1/status', 'GET', 1, '{200}',  'pending to be claimed'),
+    ('job 3', '30 2 * * *', 'http://localhost:8080/v1/status', 'GET', 1, '{200}',  'pending to be claimed'),
+    ('job 4', '15 3 * * *', 'http://localhost:8080/v1/status', 'GET', 1, '{200}',  'pending to be claimed'),
+    ('job 5', '0 */6 * * *', 'http://localhost:8080/v1/status', 'GET', 1, '{200}',  'pending to be claimed'),
+    ('job 6', '*/10 * * * *', 'http://localhost:8080/v1/status', 'GET', 1, '{200}',  'pending to be claimed'),
+    ('job 7', '45 4 * * *', 'http://localhost:8080/v1/status', 'GET', 1, '{200}',  'pending to be claimed'),
+    ('job 8', '0 5 * * *', 'http://localhost:8080/v1/status', 'GET', 1, '{200}',  'pending to be claimed'),
+    ('job 9', '*/15 * * * *', 'http://localhost:8080/v1/status', 'GET', 1, '{200}',  'pending to be claimed'),
+    ('job 10', '0 6 * * *', 'http://localhost:8080/v1/status', 'GET', 1, '{200}',  'pending to be claimed');
 `
 
 func Seed() {

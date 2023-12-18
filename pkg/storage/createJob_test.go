@@ -19,6 +19,7 @@ func TestCreateJob(t *testing.T) {
 		{
 			name: "CreateJobWithNoAlerts",
 			job: CreateJobInput{
+				Name:            "testing job with no alerts",
 				CronExpString:   "*/1 * * * *",
 				Endpoint:        "/test",
 				HttpMethod:      "GET",
@@ -27,6 +28,7 @@ func TestCreateJob(t *testing.T) {
 			},
 			expectErr: false,
 			assertFunc: func(t *testing.T, j *job.Job) {
+				assert.Equal(t, "testing job with no alerts", j.Name)
 				assert.Equal(t, "*/1 * * * *", j.CronExpString)
 				assert.Equal(t, "/test", j.Endpoint)
 				assert.Equal(t, "GET", j.HttpMethod)
@@ -38,6 +40,7 @@ func TestCreateJob(t *testing.T) {
 		{
 			name: "CreateJobWithAlerts",
 			job: CreateJobInput{
+				Name:            "testing job with alerts",
 				CronExpString:   "*/1 * * * *",
 				Endpoint:        "/test",
 				HttpMethod:      "GET",
@@ -51,6 +54,7 @@ func TestCreateJob(t *testing.T) {
 			},
 			expectErr: false,
 			assertFunc: func(t *testing.T, j *job.Job) {
+				assert.Equal(t, "testing job with alerts", j.Name)
 				assert.Equal(t, "*/1 * * * *", j.CronExpString)
 				assert.Equal(t, "/test", j.Endpoint)
 				assert.Equal(t, "GET", j.HttpMethod)

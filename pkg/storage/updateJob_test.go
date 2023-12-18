@@ -19,6 +19,7 @@ func TestUpdateJob(t *testing.T) {
 		{
 			name: "UpdateJobWithNoAlerts",
 			job: UpdateJobInput{
+				Name:            "New Name",
 				Id:              1,
 				CronExpString:   "*/5 * * * *",
 				Endpoint:        "/updated-test",
@@ -28,6 +29,7 @@ func TestUpdateJob(t *testing.T) {
 			},
 			expectErr: false,
 			assertFunc: func(t *testing.T, j *job.Job) {
+				assert.Equal(t, "New Name", j.Name)
 				assert.Equal(t, "*/5 * * * *", j.CronExpString)
 				assert.Equal(t, "/updated-test", j.Endpoint)
 				assert.Equal(t, "PUT", j.HttpMethod)
@@ -40,6 +42,7 @@ func TestUpdateJob(t *testing.T) {
 			name: "UpdateJobWithAlerts",
 			job: UpdateJobInput{
 				Id:              1,
+				Name:            "New Name",
 				CronExpString:   "*/10 * * * *",
 				Endpoint:        "/updated-test",
 				HttpMethod:      "PUT",
@@ -53,6 +56,7 @@ func TestUpdateJob(t *testing.T) {
 			},
 			expectErr: false,
 			assertFunc: func(t *testing.T, j *job.Job) {
+				assert.Equal(t, "New Name", j.Name)
 				assert.Equal(t, "*/10 * * * *", j.CronExpString)
 				assert.Equal(t, "/updated-test", j.Endpoint)
 				assert.Equal(t, "PUT", j.HttpMethod)

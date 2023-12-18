@@ -34,6 +34,7 @@ func TestGetJobUpdates(t *testing.T) {
 	var seedOneJobQuery = `
 INSERT INTO ruok.jobs (
 	id,
+	job_name,
 	cron_exp_string,
 	endpoint,
 	httpmethod,
@@ -41,7 +42,7 @@ INSERT INTO ruok.jobs (
 	success_statuses,
 	status,
 	claimed_by
-) VALUES (1,'* * * * *', '/', 'GET', 1, '{200}',  'claimed','application1')
+) VALUES (1, 'testing job' ,'* * * * *', '/', 'GET', 1, '{200}',  'claimed','application1')
 `
 	cfg := config.FromEnvs()
 	s, closeDbCon := NewStorage(&cfg)
@@ -53,6 +54,7 @@ INSERT INTO ruok.jobs (
 	}
 
 	new_cron_exp_string := "0 * * * * *"
+	new_name := "updated name"
 	new_endpoint := "/slash"
 	new_httpmethod := "POST"
 	new_max_retries := 3
@@ -63,15 +65,17 @@ INSERT INTO ruok.jobs (
 
 	_, err = s.GetClient().Exec(context.Background(), `
 		UPDATE ruok.jobs SET 
-			cron_exp_string = $1,
-			endpoint = $2,
-			httpmethod = $3,
-			max_retries = $4,
-			headers_string = $5,
-			success_statuses = $6,
-			tls_client_cert = $7,
-			updated_at = $8
-		WHERE id = $9`,
+			job_name = $1,
+			cron_exp_string = $2,
+			endpoint = $3,
+			httpmethod = $4,
+			max_retries = $5,
+			headers_string = $6,
+			success_statuses = $7,
+			tls_client_cert = $8,
+			updated_at = $9
+		WHERE id = $10`,
+		new_name,
 		new_cron_exp_string,
 		new_endpoint,
 		new_httpmethod,
@@ -89,6 +93,7 @@ INSERT INTO ruok.jobs (
 	j := s.GetJobUpdates(1)
 
 	assert.NotNil(t, j, "GetJobUpdates should return a non-nil JobUpdates instance")
+	assert.Equal(t, new_name, j.Job_name, "Unexpected cron_exp_string")
 	assert.Equal(t, new_cron_exp_string, j.Cron_exp_string, "Unexpected cron_exp_string")
 	assert.Equal(t, new_endpoint, j.Endpoint, "Unexpected endpoint")
 	assert.Equal(t, new_httpmethod, j.Httpmethod, "Unexpected httpmethod")
