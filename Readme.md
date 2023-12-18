@@ -257,6 +257,9 @@ If you are setting jobs for `ruok`, those need specific configurations.
 Jobs are stored in `ruok.jobs` table and follows this structure.
 
 ```bash
+# A human friendly name to identify the job
+job_name
+
 # The service endpoint to monitor
 endpoint
 
@@ -302,6 +305,7 @@ POST /v1/jobs
 
 # Example body
 {
+    "name:" "Service 1",
     "cronexp": "*/5 * * * * *",
     "maxRetries": 1,
     "endpoint": "http://example.com",
@@ -330,6 +334,7 @@ id --> the id of the job to update
 
 # Example body
 {
+    "name:" "Service 1 - beta",
     "cronexp": "*/5 * * * * *",
     "maxRetries": 1,
     "endpoint": "http://example.com",
