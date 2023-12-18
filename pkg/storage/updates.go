@@ -79,7 +79,8 @@ func (s *SQLStorage) ListenForChanges(jobIDUpdatedCh chan int, ctx context.Conte
 }
 
 const getJobsUpdatesQuery = `
-SELECT 
+SELECT
+	job_name,
 	cron_exp_string,
 	endpoint,
 	httpmethod,
@@ -93,6 +94,7 @@ WHERE id = $1
 `
 
 type JobUpdates struct {
+	Job_name         string
 	Cron_exp_string  string
 	Endpoint         string
 	Httpmethod       string
@@ -113,7 +115,7 @@ func (s *SQLStorage) GetJobUpdates(jobId int) *JobUpdates {
 	defer tx.Rollback(ctx)
 
 	row := tx.QueryRow(ctx, getJobsUpdatesQuery, jobId)
-
+	var job_name string
 	var cron_exp_string string
 	var endpoint string
 	var httpmethod string
@@ -124,6 +126,7 @@ func (s *SQLStorage) GetJobUpdates(jobId int) *JobUpdates {
 	var updated_at sql.NullInt64
 
 	err = row.Scan(
+		&job_name,
 		&cron_exp_string,
 		&endpoint,
 		&httpmethod,
@@ -139,6 +142,7 @@ func (s *SQLStorage) GetJobUpdates(jobId int) *JobUpdates {
 		return nil
 	}
 	return &JobUpdates{
+		job_name,
 		cron_exp_string,
 		endpoint,
 		httpmethod,

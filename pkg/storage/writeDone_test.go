@@ -13,6 +13,7 @@ import (
 var seedOneJobQuery = `
 INSERT INTO ruok.jobs (
 	id,
+	job_name,
 	cron_exp_string,
 	endpoint,
 	httpmethod,
@@ -20,12 +21,13 @@ INSERT INTO ruok.jobs (
 	success_statuses,
 	status,
 	claimed_by
-) VALUES (1,'* * * * *', '/', 'GET', 1, '{200}',  'claimed','application1')
+) VALUES (1, 'testing job', '* * * * *', '/', 'GET', 1, '{200}',  'claimed','application1')
 `
 
 var makeJobStruct = func(now time.Time) job.Job {
 	return job.Job{
 		Id:              1,
+		Name:            "testing job",
 		CronExpString:   "* * * * *",
 		LastExecution:   now,
 		ShouldExecuteAt: now,
@@ -46,6 +48,7 @@ var selectJobExecutionQuery = `
 SELECT 
 	id,
 	job_id,
+	job_name,
 	cron_exp_string,
 	endpoint,
 	httpmethod,
@@ -105,6 +108,7 @@ func TestWriteDone(t *testing.T) {
 			var (
 				id              int64
 				jobID           int64
+				name            string
 				cronExpString   string
 				endpoint        string
 				httpMethod      string
@@ -122,6 +126,7 @@ func TestWriteDone(t *testing.T) {
 			err = row.Scan(
 				&id,
 				&jobID,
+				&name,
 				&cronExpString,
 				&endpoint,
 				&httpMethod,
@@ -142,6 +147,7 @@ func TestWriteDone(t *testing.T) {
 				jobID,
 				j,
 				t,
+				name,
 				cronExpString,
 				endpoint,
 				httpMethod,
@@ -223,6 +229,7 @@ func checkJobExecutionFields(
 	jobID int64,
 	j job.Job,
 	t *testing.T,
+	name,
 	cronExpString string,
 	endpoint string,
 	httpMethod string,
@@ -237,6 +244,10 @@ func checkJobExecutionFields(
 ) {
 	if jobID != int64(j.Id) {
 		t.Errorf("Expected JobID: %d, Got: %d", j.Id, jobID)
+	}
+	if name != j.Name {
+		t.Errorf("Expected name: %s, Got: %s", j.Name, name)
+
 	}
 
 	if cronExpString != j.CronExpString {

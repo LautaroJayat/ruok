@@ -32,6 +32,11 @@ func validateCreateFields(j storage.CreateJobInput) ([]string, bool) {
 	hasErrors := false
 	errors := []string{}
 
+	if j.Name == "" {
+		hasErrors = true
+		errors = append(errors, "must provide a name")
+	}
+
 	if j.CronExpString == "" {
 		hasErrors = true
 		errors = append(errors, "cron expression string not found")
@@ -94,6 +99,11 @@ func validateUpdateFields(j storage.UpdateJobInput) ([]string, bool) {
 	if j.Id == 0 {
 		hasErrors = true
 		errors = append(errors, "invalid or missing id")
+	}
+
+	if j.Name == "" {
+		hasErrors = true
+		errors = append(errors, "must provide a name")
 	}
 
 	if j.CronExpString == "" {

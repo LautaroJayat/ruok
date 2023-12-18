@@ -3,6 +3,7 @@ CREATE ROLE admin;  -- Administrator
 -- Create table for Jobs
 CREATE TABLE IF NOT EXISTS ruok.jobs (
 	id bigserial PRIMARY KEY,
+	job_name text NOT NULL,
 	cron_exp_string text NOT NULL,
 	endpoint text NOT NULL,
 	httpmethod text NOT NULL,
@@ -36,6 +37,7 @@ CREATE POLICY admin_all_jobs ON ruok.jobs TO admin USING (true) WITH CHECK (true
 CREATE TABLE IF NOT EXISTS ruok.job_results (
 	id bigserial PRIMARY KEY,
 	job_id bigint,
+	job_name text NOT NULL,
 	cron_exp_string varchar NOT NULL,
 	endpoint varchar NOT NULL,
 	httpmethod varchar NOT NULL,

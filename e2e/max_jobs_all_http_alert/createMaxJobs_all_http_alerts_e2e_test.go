@@ -74,6 +74,7 @@ func setupTestServer(results *mapping) *httptest.Server {
 
 func createJobInput(id int, jobName int, host string) storage.CreateJobInput {
 	return storage.CreateJobInput{
+		Name:            fmt.Sprintf("job %d", id),
 		CronExpString:   "*/5 * * * * * *",
 		MaxRetries:      1,
 		Endpoint:        e2e.MakeTestURL(host, jobName, id),

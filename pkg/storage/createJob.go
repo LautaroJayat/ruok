@@ -11,17 +11,19 @@ import (
 
 var createJobWithNoAlerts = `
 INSERT INTO ruok.jobs (
+	job_name,
 	cron_exp_string,
 	endpoint,
 	httpmethod,
 	max_retries,
 	success_statuses,
 	status
-) VALUES ($1, $2, $3, $4, $5, $6);
+) VALUES ($1, $2, $3, $4, $5, $6, $7);
 `
 
 var createJobWithAlerts = `
 INSERT INTO ruok.jobs (
+	job_name,
 	cron_exp_string,
 	endpoint,
 	httpmethod,
@@ -33,10 +35,11 @@ INSERT INTO ruok.jobs (
 	alert_method,
 	alert_headers_string,
 	alert_payload
-) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);
+) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);
 `
 
 type CreateJobInput struct {
+	Name            string            `json:"name"`
 	CronExpString   string            `json:"cronexp"`
 	MaxRetries      int               `json:"maxRetries"`
 	Endpoint        string            `json:"endpoint"`
@@ -78,6 +81,7 @@ func (sqls *SQLStorage) CreateJob(j CreateJobInput) error {
 		}
 
 		_, err = tx.Exec(ctx, createJobWithAlerts,
+			j.Name,
 			j.CronExpString,
 			j.Endpoint,
 			j.HttpMethod,
@@ -92,6 +96,7 @@ func (sqls *SQLStorage) CreateJob(j CreateJobInput) error {
 		)
 	} else {
 		_, err = tx.Exec(ctx, createJobWithNoAlerts,
+			j.Name,
 			j.CronExpString,
 			j.Endpoint,
 			j.HttpMethod,
