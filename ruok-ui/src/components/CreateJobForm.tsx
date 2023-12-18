@@ -35,6 +35,7 @@ const parseSuccessStatuses = (input: string): [number[], boolean] => {
 
 export const CreateJobForm = React.forwardRef(() => {
   const mutation = useMutation(createJob);
+  const [name, setName] = useState('');
   const [cron, setCron] = useState('');
   const [endpoint, setEndpoint] = useState('');
   const [method, setMethod] = useState('');
@@ -60,6 +61,10 @@ export const CreateJobForm = React.forwardRef(() => {
         }}
       >
         <Stack spacing={2}>
+          <FormControl>
+            <FormLabel>Job Name</FormLabel>
+            <Input onChange={(event: React.ChangeEvent<HTMLInputElement>) => setName(event.target.value)} required />
+          </FormControl>
           <FormControl>
             <FormLabel>Cron expression</FormLabel>
             <Input onChange={(event: React.ChangeEvent<HTMLInputElement>) => setCron(event.target.value)} required />
@@ -114,8 +119,9 @@ export const CreateJobForm = React.forwardRef(() => {
             disabled={mutation.isLoading}
             onClick={(e) => {
               e.preventDefault();
-              if (!!cron && !!endpoint && !!method && success.length > 0) {
+              if (!!name && !!cron && !!endpoint && !!method && success.length > 0) {
                 const body = JSON.stringify({
+                  name,
                   cronexp: cron,
                   maxRetries: 1,
                   endpoint,
