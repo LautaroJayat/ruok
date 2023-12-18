@@ -142,7 +142,9 @@ func ParsePollInterval() time.Duration {
 	interval, err := strconv.ParseInt(intervalString, 10, 64)
 	log.Info().Msgf("config.PollingInterval() %d %q", interval, os.Getenv(POLL_INTERVAL_SECONDS))
 	if err != nil {
-		log.Error().Err(err).Msgf("could not parse POLLING_INTERVAL_SECONDS env defaulting to %f seconds", defaultPollInterval.Seconds())
+		log.Error().Err(err).Msgf(
+			"could not parse POLL_INTERVAL_SECONDS env %q defaulting to %f seconds",
+			os.Getenv(POLL_INTERVAL_SECONDS), defaultPollInterval.Seconds())
 		return defaultPollInterval
 	}
 	return time.Second * time.Duration(interval)
