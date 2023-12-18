@@ -1,7 +1,8 @@
 import { lazy } from 'react';
 
 const JobsList = lazy(() => import('../pages/JobsList'));
-const InstanceInfo = lazy(() => import('../pages/IntanceInfo'));
+const InstanceInfo = lazy(() => import('../pages/InstanceInfo'));
+const JobResultsList = lazy(() => import('../pages/JobResultsList'));
 
 export default [
   {
@@ -9,10 +10,11 @@ export default [
     title: 'Registered Jobs',
     component: JobsList,
   },
-  /*{
+  {
     path: '/jobs/:jobId',
     title: 'Job Executions',
-  },*/
+    component: JobResultsList,
+  },
   {
     path: '/instance',
     title: 'Instance Info',

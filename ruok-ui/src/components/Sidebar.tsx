@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import GlobalStyles from '@mui/joy/GlobalStyles';
 import Box from '@mui/joy/Box';
 import IconButton from '@mui/joy/IconButton';
@@ -13,6 +13,9 @@ import FavoriteRoundedIcon from '@mui/icons-material/FavoriteRounded';
 import AccessTimeFilledRoundedIcon from '@mui/icons-material/AccessTimeFilledRounded';
 import HelpRoundedIcon from '@mui/icons-material/HelpRounded';
 import { useNavigate } from 'react-router-dom';
+import { Button } from '@mui/joy';
+import ModalWrapper from './Modal';
+import { CreateJobForm } from './CreateJobForm';
 
 //import ColorSchemeToggle from './ColorSchemeToggle';
 //import { closeSidebar } from '../utils';
@@ -49,6 +52,7 @@ function SidebarButton({
 }
 
 export default function Sidebar() {
+  const [createJobOpen, setCreateJobOpen] = useState(false);
   const navigate = useNavigate();
 
   return (
@@ -143,6 +147,12 @@ export default function Sidebar() {
           />
         </List>
       </Box>
+      <Button onClick={() => setCreateJobOpen(true)} size="sm" variant="solid">
+        New Job!
+      </Button>
+      <ModalWrapper open={createJobOpen} onClose={() => setCreateJobOpen(false)}>
+        <CreateJobForm />
+      </ModalWrapper>
     </Sheet>
   );
 }

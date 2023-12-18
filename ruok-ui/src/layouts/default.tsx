@@ -1,16 +1,13 @@
-import { useLocation, Outlet } from 'react-router-dom';
-import { Link, Box, Breadcrumbs, Typography } from '@mui/joy';
-import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
-import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
+import { Outlet } from 'react-router-dom';
+import { Box } from '@mui/joy';
+
 import Header from '../components/Header';
 import Sidebar from '../components/Sidebar';
 
 export default () => {
-  const location = useLocation();
-
   return (
     <>
-      <Box sx={{ display: 'flex', minHeight: '100dvh' }}>
+      <Box sx={{ display: 'flex', minHeight: '100dvh', maxHeight: '100dvh', overflow: 'hidden' }}>
         <Header />
         <Sidebar />
         <Box
@@ -29,41 +26,13 @@ export default () => {
             flexDirection: 'column',
             minWidth: 0,
             height: '100dvh',
+            minHeight: '100dvh',
+            maxHeight: '100dvh',
             gap: 1,
+            overflow: 'hidden',
           }}
         >
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Breadcrumbs
-              size="sm"
-              aria-label="breadcrumbs"
-              //@ts-ignore
-              separator={<ChevronRightRoundedIcon fontSize="sm" />}
-              sx={{ pl: 0 }}
-            >
-              <Link underline="none" color="neutral" href="#some-link" aria-label="Home">
-                <HomeRoundedIcon />
-              </Link>
-              <Link underline="hover" color="neutral" href="#some-link" fontSize={12} fontWeight={500}>
-                Dashboard
-              </Link>
-              <Typography color="primary" fontWeight={500} fontSize={12}>
-                {location.pathname}
-              </Typography>
-            </Breadcrumbs>
-          </Box>
-          <Box
-            sx={{
-              display: 'flex',
-              mb: 1,
-              gap: 1,
-              flexDirection: { xs: 'column', sm: 'row' },
-              alignItems: { xs: 'start', sm: 'center' },
-              flexWrap: 'wrap',
-              justifyContent: 'space-between',
-            }}
-          >
-            <Outlet />
-          </Box>
+          <Outlet />
         </Box>
       </Box>
     </>

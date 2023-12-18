@@ -12,37 +12,55 @@ export default ({
   Foot?: JSX.Element;
 }) => {
   return (
-    <Sheet
-      className="OrderTableContainer"
-      variant="outlined"
-      sx={{
-        display: { xs: 'none', sm: 'initial' },
-        width: '100%',
-        borderRadius: 'sm',
-        flexShrink: 1,
-        overflow: 'auto',
-        minHeight: 0,
-      }}
-    >
-      <Table
-        aria-labelledby={title}
-        stickyHeader
-        hoverRow
-        size="sm"
+    <>
+      <Sheet
         sx={{
-          '--TableCell-headBackground': 'var(--joy-palette-background-level1)',
-          '--Table-headerUnderlineThickness': '1px',
-          '--TableRow-hoverBackground': 'var(--joy-palette-background-level1)',
-          '--TableCell-paddingY': '4px',
-          '--TableCell-paddingX': '8px',
+          '--TableCell-height': '40px',
+          // the number is the amount of the header rows.
+          '--TableHeader-height': 'calc(1 * var(--TableCell-height))',
+          height: '80dvh',
+          maxHeight: '80%',
+          overflow: 'auto',
+          background: (theme) => `linear-gradient(${theme.vars.palette.background.surface} 30%, rgba(255, 255, 255, 0)),
+            linear-gradient(rgba(255, 255, 255, 0), ${theme.vars.palette.background.surface} 70%) 0 100%,
+            radial-gradient(
+              farthest-side at 50% 0,
+              rgba(0, 0, 0, 0.12),
+              rgba(0, 0, 0, 0)
+            ),
+            radial-gradient(
+                farthest-side at 50% 100%,
+                rgba(0, 0, 0, 0.12),
+                rgba(0, 0, 0, 0)
+              )
+              0 100%`,
+          backgroundSize: '100% 40px, 100% 40px, 100% 14px, 100% 14px',
+          backgroundRepeat: 'no-repeat',
+          backgroundAttachment: 'local, local, scroll, scroll',
+          backgroundPosition: '0 var(--TableHeader-height), 0 100%, 0 var(--TableHeader-height), 0 100%',
+          backgroundColor: 'background.surface',
         }}
       >
-        <thead>
-          <Headers />
-        </thead>
-        <tbody>{Rows}</tbody>
-        {Foot && Foot}
-      </Table>
-    </Sheet>
+        <Table
+          aria-labelledby={title}
+          stickyHeader
+          hoverRow
+          size="sm"
+          sx={{
+            '--TableCell-headBackground': 'var(--joy-palette-background-level1)',
+            '--Table-headerUnderlineThickness': '1px',
+            '--TableRow-hoverBackground': 'var(--joy-palette-background-level1)',
+            '--TableCell-paddingY': '4px',
+            '--TableCell-paddingX': '8px',
+          }}
+        >
+          <thead style={{ width: '100%' }}>
+            <Headers />
+          </thead>
+          <tbody style={{ width: '100%' }}>{Rows}</tbody>
+        </Table>
+      </Sheet>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', padding: 0, margin: 0, top: 0 }}>{Foot && Foot}</div>
+    </>
   );
 };
