@@ -42,6 +42,7 @@ SELECT
 	succeeded
  FROM ruok.job_results 
  WHERE claimed_by = $1 AND job_id = $2
+ ORDER BY id DESC
  LIMIT  $3
  OFFSET $4;
  `, config.AppName(), jobId, limit, offset)
