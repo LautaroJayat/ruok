@@ -33,9 +33,8 @@ const parseSuccessStatuses = (input: string): [number[], boolean] => {
   }
 };
 
-export const CreateJobForm = React.forwardRef((props, ref) => {
+export const CreateJobForm = React.forwardRef(() => {
   const mutation = useMutation(createJob);
-  const [done, setDone] = useState(false);
   const [cron, setCron] = useState('');
   const [endpoint, setEndpoint] = useState('');
   const [method, setMethod] = useState('');
