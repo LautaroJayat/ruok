@@ -87,10 +87,10 @@ func (j *Job) IsSuccess(x int) bool {
 	return Contains(x, j.SuccessStatuses)
 }
 
-func (j *Job) InitExpression(parsefn cronParser.ParseFn) error {
-	expr, err := parsefn(j.CronExpString)
+func (j *Job) InitExpression(parseFn cronParser.ParseFn) error {
+	expr, err := parseFn(j.CronExpString)
 	if err != nil {
-		log.Error().Err(err).Msgf("error while parsing expresion for job %v", j.Id)
+		log.Error().Err(err).Msgf("error while parsing expression for job %v", j.Id)
 		return err
 	}
 	j.CronExp = expr
