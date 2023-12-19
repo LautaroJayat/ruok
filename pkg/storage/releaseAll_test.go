@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/back-end-labs/ruok/pkg/config"
+	pgxuuid "github.com/jackc/pgx-gofrs-uuid"
 )
 
 func TestReleaseAll(t *testing.T) {
@@ -46,7 +47,7 @@ func TestReleaseAll(t *testing.T) {
 
 		for rows.Next() {
 			counter++
-			var id int64
+			var id pgxuuid.UUID
 			var claimedBy sql.NullString
 			var status string
 			rows.Scan(&id, &claimedBy, &status)

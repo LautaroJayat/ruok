@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/back-end-labs/ruok/pkg/cronParser"
+	"github.com/gofrs/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -96,18 +97,25 @@ func TestInitExpression(t *testing.T) {
 }
 
 func TestScheduleHook(t *testing.T) {
+	id1, _ := uuid.NewV7()
+	id2, _ := uuid.NewV7()
+	id3, _ := uuid.NewV7()
+	id4, _ := uuid.NewV7()
+	id5, _ := uuid.NewV7()
+	id6, _ := uuid.NewV7()
 	tests := []struct {
+		Id                   uuid.UUID
 		OKs                  []int
 		status               int
 		shouldTriggerError   bool
 		shouldTriggerSuccess bool
 	}{
-		{[]int{200, 201}, 200, false, true},
-		{[]int{200, 201}, 400, true, false},
-		{[]int{201}, 400, true, false},
-		{[]int{1, 2, 3}, 7, true, false},
-		{[]int{1, 2, 3}, 7, true, false},
-		{[]int{}, 7, true, false},
+		{id1, []int{200, 201}, 200, false, true},
+		{id2, []int{200, 201}, 400, true, false},
+		{id3, []int{201}, 400, true, false},
+		{id4, []int{1, 2, 3}, 7, true, false},
+		{id5, []int{1, 2, 3}, 7, true, false},
+		{id6, []int{}, 7, true, false},
 	}
 
 	for _, test := range tests {
@@ -125,12 +133,12 @@ func TestScheduleHook(t *testing.T) {
 		onSuccessFn := func(j *Job) {
 			successTriggered = true
 		}
-		ch := make(chan int)
+		ch := make(chan uuid.UUID)
 		j := &Job{
 			Scheduled:       true,
 			AbortChannel:    make(chan struct{}),
 			SuccessStatuses: test.OKs,
-			Id:              1,
+			Id:              test.Id,
 			Handlers: Handlers{
 				OnErrorFn:   onErrorFn,
 				OnSuccessFn: onSuccessFn,
@@ -157,6 +165,8 @@ func TestScheduleHook(t *testing.T) {
 }
 
 func TestAbortJob(t *testing.T) {
+	id1, _ := uuid.NewV7()
+
 	executorTriggered := false
 	executionFn := func(j *Job) ExecutionResult {
 		executorTriggered = true
@@ -168,14 +178,14 @@ func TestAbortJob(t *testing.T) {
 	}
 	onSuccessFn := func(j *Job) {
 	}
-	ch := make(chan int)
+	ch := make(chan uuid.UUID)
 	j := &Job{
 		Name:            "test job",
 		CronExpString:   "* * * * *",
 		Scheduled:       true,
 		AbortChannel:    make(chan struct{}),
 		SuccessStatuses: []int{200, 201},
-		Id:              1,
+		Id:              id1,
 		Handlers: Handlers{
 			OnErrorFn:   onErrorFn,
 			OnSuccessFn: onSuccessFn,

@@ -6,11 +6,12 @@ import (
 	"encoding/json"
 	"errors"
 
+	"github.com/gofrs/uuid"
 	"github.com/rs/zerolog/log"
 )
 
 type UpdateJobInput struct {
-	Id              int               `json:"id"`
+	Id              uuid.UUID         `json:"id"`
 	Name            string            `json:"name"`
 	CronExpString   string            `json:"cronexp"`
 	MaxRetries      int               `json:"maxRetries"`

@@ -5,11 +5,14 @@ import (
 
 	"github.com/back-end-labs/ruok/pkg/config"
 	"github.com/back-end-labs/ruok/pkg/job"
+	"github.com/gofrs/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestUpdateJob(t *testing.T) {
 	defer Drop()
+	id, _ := uuid.NewV7()
+
 	tests := []struct {
 		name       string
 		job        UpdateJobInput
@@ -20,7 +23,7 @@ func TestUpdateJob(t *testing.T) {
 			name: "UpdateJobWithNoAlerts",
 			job: UpdateJobInput{
 				Name:            "New Name",
-				Id:              1,
+				Id:              id,
 				CronExpString:   "*/5 * * * *",
 				Endpoint:        "/updated-test",
 				HttpMethod:      "PUT",
@@ -41,7 +44,7 @@ func TestUpdateJob(t *testing.T) {
 		{
 			name: "UpdateJobWithAlerts",
 			job: UpdateJobInput{
-				Id:              1,
+				Id:              id,
 				Name:            "New Name",
 				CronExpString:   "*/10 * * * *",
 				Endpoint:        "/updated-test",

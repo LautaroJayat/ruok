@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/back-end-labs/ruok/pkg/config"
+	"github.com/gofrs/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -24,7 +25,7 @@ func TestGetClaimedJobs(t *testing.T) {
 		}
 		claimedJobs := s.GetClaimedJobs(len(joblist), 0)
 		assert.Equal(t, len(claimedJobs), len(joblist))
-		expectedIds := []int{}
+		expectedIds := []uuid.UUID{}
 		for _, j := range joblist {
 			expectedIds = append(expectedIds, j.Id)
 		}

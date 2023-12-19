@@ -245,7 +245,7 @@ func TestUpdateJob(t *testing.T) {
 				t.Log("there was an error creating request body")
 				t.FailNow()
 			}
-			req, err := http.NewRequest("PUT", fmt.Sprintf("/v1/jobs/%d", jobId), bytes.NewReader(body))
+			req, err := http.NewRequest("PUT", fmt.Sprintf("/v1/jobs/%s", jobId), bytes.NewReader(body))
 			assert.NoError(t, err)
 
 			w := httptest.NewRecorder()

@@ -6,11 +6,13 @@ import (
 	"encoding/json"
 	"errors"
 
+	"github.com/gofrs/uuid"
 	"github.com/rs/zerolog/log"
 )
 
 var createJobWithNoAlerts = `
 INSERT INTO ruok.jobs (
+	id,
 	job_name,
 	cron_exp_string,
 	endpoint,
@@ -18,11 +20,12 @@ INSERT INTO ruok.jobs (
 	max_retries,
 	success_statuses,
 	status
-) VALUES ($1, $2, $3, $4, $5, $6, $7);
+) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);
 `
 
 var createJobWithAlerts = `
 INSERT INTO ruok.jobs (
+	id,
 	job_name,
 	cron_exp_string,
 	endpoint,
@@ -35,7 +38,7 @@ INSERT INTO ruok.jobs (
 	alert_method,
 	alert_headers_string,
 	alert_payload
-) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);
+) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13);
 `
 
 type CreateJobInput struct {
@@ -54,6 +57,12 @@ type CreateJobInput struct {
 }
 
 func (sqls *SQLStorage) CreateJob(j CreateJobInput) error {
+	id, err := uuid.NewV7()
+	if err != nil {
+		log.Error().Err(err).Msg("could not create uuidv7 for new job")
+		return err
+	}
+
 	ctx := context.Background()
 	tx, err := sqls.Db.Begin(ctx)
 	defer tx.Rollback(ctx)
@@ -81,6 +90,7 @@ func (sqls *SQLStorage) CreateJob(j CreateJobInput) error {
 		}
 
 		_, err = tx.Exec(ctx, createJobWithAlerts,
+			id,
 			j.Name,
 			j.CronExpString,
 			j.Endpoint,
@@ -96,6 +106,7 @@ func (sqls *SQLStorage) CreateJob(j CreateJobInput) error {
 		)
 	} else {
 		_, err = tx.Exec(ctx, createJobWithNoAlerts,
+			id,
 			j.Name,
 			j.CronExpString,
 			j.Endpoint,

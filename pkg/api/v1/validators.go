@@ -7,6 +7,7 @@ import (
 	"github.com/back-end-labs/ruok/pkg/config"
 	"github.com/back-end-labs/ruok/pkg/cronParser"
 	"github.com/back-end-labs/ruok/pkg/storage"
+	"github.com/gofrs/uuid"
 )
 
 func validHttpMethod(input string) bool {
@@ -92,11 +93,13 @@ func badAlertStrategy(ch string, valids []string) bool {
 
 }
 
+var zeroValueUUID = uuid.UUID{}.String()
+
 func validateUpdateFields(j storage.UpdateJobInput) ([]string, bool) {
 	hasErrors := false
 	errors := []string{}
 
-	if j.Id == 0 {
+	if j.Id.String() == zeroValueUUID {
 		hasErrors = true
 		errors = append(errors, "invalid or missing id")
 	}

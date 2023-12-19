@@ -3,9 +3,9 @@ package storage
 import (
 	"context"
 	"database/sql"
-	"strconv"
 
 	"github.com/back-end-labs/ruok/pkg/config"
+	"github.com/gofrs/uuid"
 	"github.com/rs/zerolog/log"
 )
 
@@ -22,10 +22,10 @@ func (s *SQLStorage) StopListeningForChanges() error {
 // Creates a gorutine that waits for messages in a loop and sends them over "jobIDUpdatedCh".
 //
 // It will block until the waiting loop starts
-func (s *SQLStorage) ListenForChanges(jobIDUpdatedCh chan int, ctx context.Context) {
+func (s *SQLStorage) ListenForChanges(jobIDUpdatedCh chan uuid.UUID, ctx context.Context) {
 	ready := make(chan struct{})
 
-	go func(jobIDUpdatedCh chan int, ctx context.Context) {
+	go func(jobIDUpdatedCh chan uuid.UUID, ctx context.Context) {
 		ownChannel := config.AppName()
 		conn, err := s.Db.Acquire(context.Background())
 
@@ -63,12 +63,12 @@ func (s *SQLStorage) ListenForChanges(jobIDUpdatedCh chan int, ctx context.Conte
 				log.Info().Msg("empty notification")
 				continue
 			}
-			id, err := strconv.ParseInt(notification.Payload, 10, 64)
+			id, err := uuid.FromString(notification.Payload)
 			if err != nil {
 				log.Error().Err(err).Msgf("an error occurred while parsing payload into job id %q for job update", notification.Payload)
 				continue
 			}
-			jobIDUpdatedCh <- int(id)
+			jobIDUpdatedCh <- id
 		}
 		log.Debug().Msg("exiting from listening updates gorutine")
 	}(jobIDUpdatedCh, ctx)
@@ -105,7 +105,7 @@ type JobUpdates struct {
 	Updated_at       int64
 }
 
-func (s *SQLStorage) GetJobUpdates(jobId int) *JobUpdates {
+func (s *SQLStorage) GetJobUpdates(jobId uuid.UUID) *JobUpdates {
 	ctx := context.Background()
 	tx, err := s.Db.Begin(ctx)
 	if err != nil {

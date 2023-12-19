@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/back-end-labs/ruok/pkg/storage"
+	"github.com/gofrs/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -49,6 +50,8 @@ func TestValidUrl(t *testing.T) {
 }
 
 func TestValidateUpdateFields(t *testing.T) {
+	id1, _ := uuid.NewV7()
+
 	tests := []struct {
 		name          string
 		input         storage.UpdateJobInput
@@ -59,7 +62,7 @@ func TestValidateUpdateFields(t *testing.T) {
 			name: "ValidInput",
 			input: storage.UpdateJobInput{
 				Name:            "Job 1",
-				Id:              1,
+				Id:              id1,
 				CronExpString:   "*/1 * * * *",
 				MaxRetries:      3,
 				Endpoint:        "http://example.com",
@@ -72,7 +75,7 @@ func TestValidateUpdateFields(t *testing.T) {
 		{
 			name: "MissingName",
 			input: storage.UpdateJobInput{
-				Id:              1,
+				Id:              id1,
 				CronExpString:   "*/1 * * * *",
 				MaxRetries:      3,
 				Endpoint:        "http://example.com",
@@ -99,7 +102,7 @@ func TestValidateUpdateFields(t *testing.T) {
 			name: "InvalidCronExpression",
 			input: storage.UpdateJobInput{
 				Name:            "Job 1",
-				Id:              1,
+				Id:              id1,
 				CronExpString:   "invalid-expression",
 				MaxRetries:      3,
 				Endpoint:        "http://example.com",
@@ -113,7 +116,7 @@ func TestValidateUpdateFields(t *testing.T) {
 			name: "MissingEndpoint",
 			input: storage.UpdateJobInput{
 				Name:            "Job 1",
-				Id:              1,
+				Id:              id1,
 				CronExpString:   "*/1 * * * *",
 				MaxRetries:      3,
 				HttpMethod:      "GET",
@@ -126,7 +129,7 @@ func TestValidateUpdateFields(t *testing.T) {
 			name: "InvalidEndpointURL",
 			input: storage.UpdateJobInput{
 				Name:            "Job 1",
-				Id:              1,
+				Id:              id1,
 				CronExpString:   "*/1 * * * *",
 				MaxRetries:      3,
 				Endpoint:        "invalid-url",
@@ -140,7 +143,7 @@ func TestValidateUpdateFields(t *testing.T) {
 			name: "MissingHttpMethod",
 			input: storage.UpdateJobInput{
 				Name:            "Job 1",
-				Id:              1,
+				Id:              id1,
 				CronExpString:   "*/1 * * * *",
 				MaxRetries:      3,
 				Endpoint:        "http://example.com",
@@ -153,7 +156,7 @@ func TestValidateUpdateFields(t *testing.T) {
 			name: "InvalidMethod",
 			input: storage.UpdateJobInput{
 				Name:            "Job 1",
-				Id:              1,
+				Id:              id1,
 				CronExpString:   "*/1 * * * *",
 				MaxRetries:      3,
 				Endpoint:        "http://example.com",
@@ -167,7 +170,7 @@ func TestValidateUpdateFields(t *testing.T) {
 			name: "MissingSuccessStatuses",
 			input: storage.UpdateJobInput{
 				Name:          "Job 1",
-				Id:            1,
+				Id:            id1,
 				CronExpString: "*/1 * * * *",
 				MaxRetries:    3,
 				Endpoint:      "http://example.com",
@@ -180,7 +183,7 @@ func TestValidateUpdateFields(t *testing.T) {
 			name: "InvalidStrategy",
 			input: storage.UpdateJobInput{
 				Name:            "Job 1",
-				Id:              1,
+				Id:              id1,
 				CronExpString:   "*/1 * * * *",
 				MaxRetries:      3,
 				Endpoint:        "http://example.com",
@@ -195,7 +198,7 @@ func TestValidateUpdateFields(t *testing.T) {
 			name: "InvalidAlertEndpoint",
 			input: storage.UpdateJobInput{
 				Name:            "Job 1",
-				Id:              1,
+				Id:              id1,
 				CronExpString:   "*/1 * * * *",
 				MaxRetries:      3,
 				Endpoint:        "http://example.com",
@@ -210,7 +213,7 @@ func TestValidateUpdateFields(t *testing.T) {
 			name: "InvalidAlertMethod",
 			input: storage.UpdateJobInput{
 				Name:            "Job 1",
-				Id:              1,
+				Id:              id1,
 				CronExpString:   "*/1 * * * *",
 				MaxRetries:      3,
 				Endpoint:        "http://example.com",

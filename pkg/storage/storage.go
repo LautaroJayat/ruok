@@ -5,6 +5,10 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/gofrs/uuid"
+	pgxuuid "github.com/jackc/pgx-gofrs-uuid"
+
+	"github.com/jackc/pgx/v5"
 	"github.com/rs/zerolog/log"
 
 	"github.com/back-end-labs/ruok/pkg/config"
@@ -19,9 +23,9 @@ type Storage interface {
 }
 
 type SchedulerStorage interface {
-	ListenForChanges(ch chan int, ctx context.Context)
+	ListenForChanges(ch chan uuid.UUID, ctx context.Context)
 	StopListeningForChanges() error
-	GetJobUpdates(jobId int) *JobUpdates
+	GetJobUpdates(jobId uuid.UUID) *JobUpdates
 	GetAvailableJobs(limit int) []*job.Job
 	WriteDone(*job.Job) error
 	RegisterSelf()
@@ -31,7 +35,7 @@ type SchedulerStorage interface {
 
 type APIStorage interface {
 	GetClaimedJobs(limit int, offset int) []*job.Job
-	GetClaimedJobsExecutions(jobId int, limit int, offset int) []*job.JobExecution
+	GetClaimedJobsExecutions(jobId uuid.UUID, limit int, offset int) []*job.JobExecution
 	Connected() bool
 	GetSSLVersion() (bool, string)
 	CreateJob(j CreateJobInput) error
@@ -79,8 +83,21 @@ func NewStorage(cfg *config.Configs) (Storage, Closer) {
 	}
 	// Connect to database
 	switch cfg.Kind {
+
 	case "postgres":
-		db, err := pgxpool.New(context.Background(), connStr)
+		dbconfig, err := pgxpool.ParseConfig(connStr)
+
+		if err != nil {
+			log.Fatal().Err(err).Msg("could not parse url to configs")
+		}
+
+		dbconfig.AfterConnect = func(ctx context.Context, conn *pgx.Conn) error {
+			pgxuuid.Register(conn.TypeMap())
+			return nil
+		}
+
+		db, err := pgxpool.NewWithConfig(context.Background(), dbconfig)
+
 		if err != nil {
 			log.Fatal().Err(err).Msg("could no stablish a connection with the database, aborting.")
 		}

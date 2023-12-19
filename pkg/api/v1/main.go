@@ -9,6 +9,7 @@ import (
 	"github.com/back-end-labs/ruok/pkg/config"
 	"github.com/back-end-labs/ruok/pkg/storage"
 	"github.com/gin-gonic/gin"
+	"github.com/gofrs/uuid"
 )
 
 var limitLabel string = "limit"
@@ -69,7 +70,7 @@ func ListJobExecutions(s storage.APIStorage) gin.HandlerFunc {
 		offsetQ := c.DefaultQuery(offsetLabel, "0")
 		jobIdParam := c.Param("id")
 
-		jobId, err := strconv.Atoi(jobIdParam)
+		jobId, err := uuid.FromString(jobIdParam)
 		if err != nil {
 			c.JSON(404, gin.H{
 				"message": fmt.Sprintf("Could not found jobs with id %v", jobId),
@@ -166,7 +167,7 @@ func UpdateJob(s storage.APIStorage) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var j storage.UpdateJobInput
 
-		id, err := strconv.Atoi(c.Param("id"))
+		id, err := uuid.FromString(c.Param("id"))
 
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{errorLabel: fmt.Sprintf("bad id provided: %s", c.Param("id"))})
