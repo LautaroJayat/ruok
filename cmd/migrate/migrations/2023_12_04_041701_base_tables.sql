@@ -2,7 +2,7 @@ CREATE ROLE admin;  -- Administrator
 
 -- Create table for Jobs
 CREATE TABLE IF NOT EXISTS ruok.jobs (
-	id bigserial PRIMARY KEY,
+	id uuid PRIMARY KEY NOT NULL,
 	job_name text NOT NULL,
 	cron_exp_string text NOT NULL,
 	endpoint text NOT NULL,
