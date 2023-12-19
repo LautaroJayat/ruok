@@ -88,6 +88,9 @@ SELECT
 	headers_string,
 	success_statuses,
 	tls_client_cert,
+	alert_strategy,
+	alert_endpoint,
+	alert_method,
 	updated_at
 FROM ruok.jobs
 WHERE id = $1
@@ -99,9 +102,12 @@ type JobUpdates struct {
 	Endpoint         string
 	Httpmethod       string
 	Max_retries      int
-	Headers_string   sql.NullString
+	Headers_string   string
 	Success_statuses []int
-	Tls_client_cert  sql.NullString
+	Tls_client_cert  string
+	Alert_strategy   string
+	Alert_endpoint   string
+	Alert_method     string
 	Updated_at       int64
 }
 
@@ -124,6 +130,9 @@ func (s *SQLStorage) GetJobUpdates(jobId uuid.UUID) *JobUpdates {
 	var success_statuses []int
 	var tls_client_cert sql.NullString
 	var updated_at sql.NullInt64
+	var alert_strategy sql.NullString
+	var alert_endpoint sql.NullString
+	var alert_method sql.NullString
 
 	err = row.Scan(
 		&job_name,
@@ -134,6 +143,9 @@ func (s *SQLStorage) GetJobUpdates(jobId uuid.UUID) *JobUpdates {
 		&headers_string,
 		&success_statuses,
 		&tls_client_cert,
+		&alert_strategy,
+		&alert_endpoint,
+		&alert_method,
 		&updated_at,
 	)
 
@@ -147,9 +159,12 @@ func (s *SQLStorage) GetJobUpdates(jobId uuid.UUID) *JobUpdates {
 		endpoint,
 		httpmethod,
 		max_retries,
-		headers_string,
+		headers_string.String,
 		success_statuses,
-		tls_client_cert,
+		tls_client_cert.String,
+		alert_strategy.String,
+		alert_endpoint.String,
+		alert_method.String,
 		updated_at.Int64,
 	}
 }
