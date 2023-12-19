@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useContext, useEffect, useMemo, useState } from 'react';
 import GenericTable from '../components/Table';
 import { Box, Chip, ColorPaletteProp, Sheet, Stack, Typography } from '@mui/joy';
 import Loading from '../components/Loading';
@@ -15,11 +15,12 @@ import KeyboardDoubleArrowLeftIcon from '@mui/icons-material/KeyboardDoubleArrow
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import { useListJobResults } from '../queries/listJobsExecutions';
 import { useLocation } from 'react-router-dom';
+import { AppContext, JobsResultNamespace } from '../context/AppContext';
 
 type rowData = {
   key?: number;
-  id: number;
-  jobId: number;
+  id: string;
+  jobId: string;
   endpoint: string;
   method: string;
   lastStatusCode: number;
@@ -53,8 +54,16 @@ const StatusChip = ({ lastStatus }: { lastStatus: 'ok' | 'error' }) => {
 const Row = ({ id, jobId, endpoint, method, succeeded, lastStatusCode, lastResponseAt }: rowData) => {
   return (
     <tr style={{ width: '100%' }}>
-      <td>{id}</td>
-      <td>{jobId}</td>
+      <td>
+        <Tooltip sx={{ zIndex: 9999999999 }} title={id} variant="outlined">
+          <span>{id.substring(0, 5)}...</span>
+        </Tooltip>
+      </td>
+      <td>
+        <Tooltip sx={{ zIndex: 9999999999 }} title={jobId} variant="outlined">
+          <span>{jobId.substring(0, 5)}...</span>
+        </Tooltip>
+      </td>
 
       <td>
         <Tooltip title={endpoint} variant="outlined">
@@ -75,7 +84,7 @@ const Headers = () => {
   return (
     <tr>
       <th style={{ width: 80, minWidth: 80, padding: '12px 6px' }}>Id</th>
-      <th style={{ width: 50, minWidth: 50, padding: '12px 6px' }}>Job Id</th>
+      <th style={{ width: 80, minWidth: 80, padding: '12px 6px' }}>Job Id</th>
       <th style={{ minWidth: 180, padding: '12px 6px' }}>Endpoint</th>
       <th style={{ width: 80, minWidth: 80, padding: '12px 6px' }}>Method</th>
       <th style={{ minWidth: 140, padding: '12px 6px' }}>Succeeded</th>
@@ -155,6 +164,7 @@ const Foot = (props: {
 
 const JobResultsList = () => {
   const location = useLocation();
+  const appContext = useContext(AppContext);
 
   const id = useMemo(() => {
     const splitPath = location.pathname.split('/');
@@ -169,6 +179,9 @@ const JobResultsList = () => {
       <Stack spacing={4}>
         <Typography style={{ marginBottom: '1rem' }} level="h1">
           Executions
+        </Typography>
+        <Typography style={{ marginBottom: '1rem' }} level="title-lg">
+          {appContext[JobsResultNamespace].jobName}
         </Typography>
         {!!error && (
           <Sheet
