@@ -49,7 +49,7 @@ const StatusChip = ({ lastStatus }: { lastStatus: 'ok' | 'error' }) => {
 };
 
 const Row = ({ id, name, endpoint, method, expression, lastExecution, lastStatus, createdAt }: rowData) => {
-  const [splittedEndpoint, setSplittedEndpoint] = useState(endpoint.split('/'));
+  const [splittedEndpoint] = useState(endpoint.split('/'));
   return (
     <tr style={{ width: '100%' }}>
       <td>{id}</td>
