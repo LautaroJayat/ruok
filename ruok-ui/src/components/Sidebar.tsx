@@ -17,9 +17,6 @@ import { Button } from '@mui/joy';
 import ModalWrapper from './Modal';
 import { CreateJobForm } from './CreateJobForm';
 
-//import ColorSchemeToggle from './ColorSchemeToggle';
-//import { closeSidebar } from '../utils';
-
 type SVGIcon = typeof FavoriteRoundedIcon;
 
 function SidebarButton({
@@ -114,7 +111,6 @@ export default function Sidebar() {
         <Typography fontFamily="'Exo', sans-serif;" fontWeight={800} level="title-lg">
           ruOK?
         </Typography>
-        {/*<ColorSchemeToggle sx={{ ml: 'auto' }} />*/}
       </Box>
       <Box
         sx={{
