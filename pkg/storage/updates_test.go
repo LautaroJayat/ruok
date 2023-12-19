@@ -92,9 +92,9 @@ func TestGetJobUpdates(t *testing.T) {
 	assert.Equal(t, new_endpoint, j.Endpoint, "Unexpected endpoint")
 	assert.Equal(t, new_httpmethod, j.Httpmethod, "Unexpected httpmethod")
 	assert.Equal(t, new_max_retries, j.Max_retries, "Unexpected max_retries")
-	assert.Equal(t, new_headers_string, j.Headers_string.String, "Unexpected headers_string")
+	assert.Equal(t, new_headers_string, j.Headers_string, "Unexpected headers_string")
 	assert.Equal(t, new_success_statuses, j.Success_statuses, "Unexpected success_statuses")
-	assert.Equal(t, new_tls_client_cert, j.Tls_client_cert.String, "Unexpected tls_client_cert")
+	assert.Equal(t, new_tls_client_cert, j.Tls_client_cert, "Unexpected tls_client_cert")
 	assert.Equal(t, new_updated_at, j.Updated_at, "Unexpected updated_at")
 }
 
