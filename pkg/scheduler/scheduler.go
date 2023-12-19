@@ -275,9 +275,12 @@ func (sched *Scheduler) refreshJob(jobId uuid.UUID) {
 	j.Scheduled = false
 	j.AbortChannel <- struct{}{}
 	j.Endpoint = updates.Endpoint
-	j.HttpMethod = updates.Endpoint
+	j.HttpMethod = updates.Httpmethod
 	j.MaxRetries = updates.Max_retries
 	j.SuccessStatuses = updates.Success_statuses
+	j.AlertStrategy = updates.Alert_strategy
+	j.AlertEndpoint = updates.Alert_endpoint
+	j.AlertMethod = updates.Alert_method
 	if j.CronExpString != updates.Cron_exp_string {
 		oldExpr := j.CronExpString
 		j.CronExpString = updates.Cron_exp_string

@@ -2,7 +2,6 @@ package scheduler
 
 import (
 	"context"
-	"database/sql"
 	"encoding/json"
 	"os"
 	"testing"
@@ -167,9 +166,9 @@ func (ms *mockStorage) GetJobUpdates(jobId uuid.UUID) *storage.JobUpdates {
 		Endpoint:         "/updated",
 		Httpmethod:       "PUT",
 		Max_retries:      2,
-		Headers_string:   sql.NullString{String: `{"Content-Type": "application/json"}`, Valid: true},
+		Headers_string:   `{"Content-Type": "application/json"}`,
 		Success_statuses: []int{200, 201},
-		Tls_client_cert:  sql.NullString{String: "updated_cert", Valid: true},
+		Tls_client_cert:  "updated_cert",
 		Updated_at:       time.Now().Unix(),
 	}
 }
