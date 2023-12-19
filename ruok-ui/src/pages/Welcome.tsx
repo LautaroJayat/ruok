@@ -7,7 +7,7 @@ export const WelcomeMsg = () => {
   return (
     <>
       <Typography level="h1" fontWeight="xl" fontSize="clamp(1.875rem, 1.3636rem + 2.1818vw, 3rem)">
-        Wellcome to "ruOK?"
+        Welcome to "ruOK?"
       </Typography>
       <Typography fontSize="lg" textColor="text.secondary" lineHeight="lg">
         This dashboard aims to be a comprehensive tool for monitoring health metrics, registered jobs, and pertinent

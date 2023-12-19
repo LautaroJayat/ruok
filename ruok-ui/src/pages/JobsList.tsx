@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import GenericTable from '../components/Table';
 import { Box, Chip, ColorPaletteProp, Link, Sheet, Stack, Typography } from '@mui/joy';
 import { useListJobs } from '../queries/listJobs';
@@ -15,10 +15,11 @@ import Option from '@mui/joy/Option';
 import KeyboardDoubleArrowLeftIcon from '@mui/icons-material/KeyboardDoubleArrowLeft';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
+import { AppContext, JobsResultNamespace, initialContext } from '../context/AppContext';
 
 type rowData = {
   key?: number;
-  id: number;
+  id: string;
   name: string;
   endpoint: string;
   method: string;
@@ -26,6 +27,7 @@ type rowData = {
   lastExecution: string;
   lastStatus: 'ok' | 'error';
   createdAt: number;
+  handleOnClick: (jobId: string, jobName: string) => void;
 };
 
 const ChipIcon = {
@@ -48,11 +50,25 @@ const StatusChip = ({ lastStatus }: { lastStatus: 'ok' | 'error' }) => {
   );
 };
 
-const Row = ({ id, name, endpoint, method, expression, lastExecution, lastStatus, createdAt }: rowData) => {
+const Row = ({
+  id,
+  name,
+  endpoint,
+  method,
+  expression,
+  lastExecution,
+  lastStatus,
+  createdAt,
+  handleOnClick,
+}: rowData) => {
   const [splittedEndpoint] = useState(endpoint.split('/'));
   return (
     <tr style={{ width: '100%' }}>
-      <td>{id}</td>
+      <td>
+        <Tooltip sx={{ zIndex: 9999999999 }} title={id} variant="outlined">
+          <span> {id.substring(0, 5)}...</span>
+        </Tooltip>
+      </td>
       <td>{name}</td>
       <td>
         <Tooltip title={endpoint} variant="outlined">
@@ -75,7 +91,7 @@ const Row = ({ id, name, endpoint, method, expression, lastExecution, lastStatus
       </td>
       <td>{new Date(createdAt).toLocaleString()}</td>
       <td>
-        <Link href={`#/jobs/${id}`}>
+        <Link onClick={() => handleOnClick(id, name)} href={`#/jobs/${id}`}>
           <SearchIcon />
         </Link>
       </td>
@@ -171,7 +187,14 @@ const Foot = (props: {
   );
 };
 
+const handleOnClick = (context: typeof initialContext) => (jobId: string, jobName: string) => {
+  context[JobsResultNamespace].jobId = jobId;
+  context[JobsResultNamespace].jobName = jobName;
+};
+
 const JobList = () => {
+  const appContext = useContext(AppContext);
+
   const [pageSize, setPageSize] = useState(10);
   const [pageNumber, setPageNumber] = useState(0);
   const { data, error, isLoading } = useListJobs(pageSize, pageNumber * pageSize);
@@ -217,6 +240,7 @@ const JobList = () => {
                     lastExecution={e.lastExecution}
                     lastStatus={e.succeeded}
                     createdAt={e.createdAt}
+                    handleOnClick={handleOnClick(appContext)}
                   />
                 );
               }) || []
