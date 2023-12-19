@@ -49,13 +49,22 @@ const StatusChip = ({ lastStatus }: { lastStatus: 'ok' | 'error' }) => {
 };
 
 const Row = ({ id, name, endpoint, method, expression, lastExecution, lastStatus, createdAt }: rowData) => {
+  const [splittedEndpoint, setSplittedEndpoint] = useState(endpoint.split('/'));
   return (
     <tr style={{ width: '100%' }}>
       <td>{id}</td>
       <td>{name}</td>
       <td>
         <Tooltip title={endpoint} variant="outlined">
-          <span>{endpoint.substring(0, 20)}...</span>
+          <span>
+            {splittedEndpoint.map((e, i) => (
+              <>
+                <wbr></wbr>
+                {e}
+                {i !== splittedEndpoint.length - 1 && '/'}
+              </>
+            ))}
+          </span>
         </Tooltip>
       </td>
       <td>{method}</td>
@@ -78,14 +87,14 @@ const Headers = () => {
   return (
     <tr>
       <th style={{ width: 80, minWidth: 80, padding: '12px 6px' }}>Job Id</th>
-      <th style={{ minWidth: 180, padding: '12px 6px' }}>Name</th>
-      <th style={{ minWidth: 180, padding: '12px 6px' }}>Endpoint</th>
-      <th style={{ width: 80, minWidth: 80, padding: '12px 6px' }}>Method</th>
-      <th style={{ minWidth: 140, padding: '12px 6px' }}>CronExpression</th>
-      <th style={{ minWidth: 140, padding: '12px 6px' }}>Last Execution</th>
-      <th style={{ minWidth: 140, padding: '12px 6px' }}>Last Status</th>
-      <th style={{ minWidth: 140, padding: '12px 6px' }}>Created At</th>
-      <th style={{ minWidth: 140, padding: '12px 6px' }}></th>
+      <th style={{ width: 80, padding: '12px 6px' }}>Name</th>
+      <th style={{ width: 150, padding: '12px 6px' }}>Endpoint</th>
+      <th style={{ width: 80, padding: '12px 6px' }}>Method</th>
+      <th style={{ width: 100, padding: '12px 6px' }}>CronExpression</th>
+      <th style={{ width: 140, padding: '12px 6px' }}>Last Execution</th>
+      <th style={{ width: 80, padding: '12px 6px' }}>Last Status</th>
+      <th style={{ width: 140, padding: '12px 6px' }}>Created At</th>
+      <th style={{ width: 50, padding: '12px 6px' }}></th>
     </tr>
   );
 };
