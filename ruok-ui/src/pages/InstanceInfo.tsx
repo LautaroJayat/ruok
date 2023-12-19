@@ -63,7 +63,7 @@ const InstanceInfo = () => {
 
         {isLoading && <Loading />}
         {data && (
-          <Stack direction="row" spacing={2} justifyContent="center" alignItems="stretch">
+          <Stack direction="row" spacing={2} justifyContent="flex-start" alignItems="stretch">
             <Stack direction="column" spacing={2}>
               <Simplecard variant="outlined" title="Application Name" description={data?.appName || 'unknown'} />
               <Simplecard variant="outlined" title="Database Connected" description={`${data?.dbConnected}`} />
