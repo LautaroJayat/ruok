@@ -137,7 +137,7 @@ export default function Sidebar() {
           <SidebarButton outside={false} path="/jobs" Icon={AccessTimeFilledRoundedIcon} title="Claimed Jobs" />
           <SidebarButton
             outside={true}
-            path="https://github.com/back-end-labs/ruok-scheduler"
+            path="https://github.com/back-end-labs/ruok/wiki"
             Icon={HelpRoundedIcon}
             title="Help"
           />
