@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 
+	"github.com/back-end-labs/ruok/pkg/config"
 	"github.com/gofrs/uuid"
 	"github.com/rs/zerolog/log"
 )
@@ -90,6 +91,13 @@ func (sqls *SQLStorage) UpdateJob(j UpdateJobInput) error {
 	if err != nil {
 		log.Error().Err(err).Msg("could not update job")
 		return errors.New("could not update job")
+	}
+
+	_, err = tx.Exec(ctx, "select pg_notify($1, $2)", config.AppName(), j.Id.String())
+
+	if err != nil {
+		log.Error().Err(err).Msg("could not notify updated job")
+		return errors.New("could not notify updated job")
 	}
 
 	err = tx.Commit(ctx)
