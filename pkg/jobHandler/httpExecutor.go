@@ -17,7 +17,7 @@ func HTTPExecutor(j *job.Job) job.ExecutionResult {
 	r, err := http.NewRequest(j.HttpMethod, j.Endpoint, nil)
 
 	if err != nil {
-		log.Error().Err(err).Msgf("could not create request for job %v", j.Id)
+		log.Error().Err(err).Msgf("could not create request for job %v. method: %q. endpoint: %q.", j.Id, j.HttpMethod, j.Endpoint)
 		return job.ExecutionResult{}
 	}
 
