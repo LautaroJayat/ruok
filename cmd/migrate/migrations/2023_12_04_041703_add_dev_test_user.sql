@@ -42,8 +42,7 @@ $do$;
 -- A default role for dropping, seeding, and so on
 GRANT USAGE on SCHEMA ruok to RUOK_SEED_AND_DROP;
 GRANT RUOK_SEED_AND_DROP TO testing_user;
-GRANT USAGE ON SEQUENCE ruok.job_results_id_seq to RUOK_SEED_AND_DROP;
-GRANT USAGE ON SEQUENCE ruok.jobs_id_seq to RUOK_SEED_AND_DROP;
+
 DROP POLICY IF EXISTS testing_user_delete_job_results ON ruok.job_results;
 CREATE POLICY testing_user_delete_job_results ON ruok.job_results FOR DELETE TO RUOK_SEED_AND_DROP USING (true);
 DROP POLICY IF EXISTS testing_user_insert_job_results ON ruok.job_results;

@@ -35,8 +35,8 @@ CREATE POLICY admin_all_jobs ON ruok.jobs TO admin USING (true) WITH CHECK (true
 
 -- Create table for Job Executions
 CREATE TABLE IF NOT EXISTS ruok.job_results (
-	id bigserial PRIMARY KEY,
-	job_id bigint,
+	id uuid PRIMARY KEY NOT NULL,
+	job_id uuid NOT NULL,
 	job_name text NOT NULL,
 	cron_exp_string varchar NOT NULL,
 	endpoint varchar NOT NULL,
