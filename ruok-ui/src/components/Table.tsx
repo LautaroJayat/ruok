@@ -15,12 +15,12 @@ export default ({
     <>
       <Sheet
         sx={{
+          height: 'auto',
+          maxHeight: '78dvh',
+          overflowY: 'scroll',
           '--TableCell-height': '40px',
           // the number is the amount of the header rows.
           '--TableHeader-height': 'calc(1 * var(--TableCell-height))',
-          height: '80dvh',
-          maxHeight: '80%',
-          overflow: 'auto',
           background: (theme) => `linear-gradient(${theme.vars.palette.background.surface} 30%, rgba(255, 255, 255, 0)),
             linear-gradient(rgba(255, 255, 255, 0), ${theme.vars.palette.background.surface} 70%) 0 100%,
             radial-gradient(
@@ -57,10 +57,21 @@ export default ({
           <thead style={{ width: '100%' }}>
             <Headers />
           </thead>
-          <tbody style={{ width: '100%' }}>{Rows}</tbody>
+          <tbody style={{ width: '100%', overflowX: 'scroll' }}>{Rows}</tbody>
         </Table>
       </Sheet>
-      <div style={{ display: 'flex', justifyContent: 'flex-end', padding: 0, margin: 0, top: 0 }}>{Foot && Foot}</div>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'flex-end',
+          padding: 0,
+          marginTop: '0.5rem',
+          marginRight: '0.1rem',
+          top: 0,
+        }}
+      >
+        {Foot && Foot}
+      </div>
     </>
   );
 };
