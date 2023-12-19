@@ -6,6 +6,9 @@ import (
 
 	"time"
 
+	"github.com/gofrs/uuid"
+	pgxuuid "github.com/jackc/pgx-gofrs-uuid"
+
 	"github.com/rs/zerolog/log"
 
 	"github.com/back-end-labs/ruok/pkg/config"
@@ -13,7 +16,7 @@ import (
 )
 
 // Gets get jobs claimed by this instance
-func (sqls *SQLStorage) GetClaimedJobsExecutions(jobId int, limit int, offset int) []*job.JobExecution {
+func (sqls *SQLStorage) GetClaimedJobsExecutions(jobId uuid.UUID, limit int, offset int) []*job.JobExecution {
 	ctx := context.Background()
 	tx, err := sqls.Db.Begin(ctx)
 
@@ -56,8 +59,8 @@ SELECT
 	jobResultsList := []*job.JobExecution{}
 
 	for rows.Next() {
-		var Id int
-		var JobId int
+		var Id pgxuuid.UUID
+		var JobId pgxuuid.UUID
 		var CronExpString string
 		var Endpoint string
 		var HttpMethod string
@@ -92,8 +95,8 @@ SELECT
 		}
 
 		j := &job.JobExecution{
-			Id:              Id,
-			JobId:           JobId,
+			Id:              uuid.UUID(Id),
+			JobId:           uuid.UUID(JobId),
 			CronExpString:   CronExpString,
 			Endpoint:        Endpoint,
 			HttpMethod:      HttpMethod,

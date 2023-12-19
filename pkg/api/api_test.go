@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -12,6 +13,7 @@ import (
 	"github.com/back-end-labs/ruok/pkg/config"
 	"github.com/back-end-labs/ruok/pkg/job"
 	"github.com/back-end-labs/ruok/pkg/storage"
+	"github.com/gofrs/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -64,7 +66,7 @@ func TestClaimedJobs_OKQueries(t *testing.T) {
 	s, close := storage.NewStorage(&cfg)
 	defer close()
 	jobs := s.GetAvailableJobs(10)
-	jobIds := []int{}
+	jobIds := []uuid.UUID{}
 	for _, j := range jobs {
 		jobIds = append(jobIds, j.Id)
 	}
@@ -109,10 +111,10 @@ func TestClaimedJobExecutions_BadParams(t *testing.T) {
 		"limit=a1&offset=0",
 		"limit=a1&offset=a1",
 	}
-
+	nonExistentJob, _ := uuid.NewV7()
 	for _, query := range queries {
 		rr := httptest.NewRecorder()
-		req, _ := http.NewRequest("GET", "/v1/jobs/1?"+query, nil)
+		req, _ := http.NewRequest("GET", fmt.Sprintf("/v1/jobs/%s?%s", nonExistentJob, query), nil)
 		router.ServeHTTP(rr, req)
 		assert.Equal(t, 400, rr.Code)
 	}

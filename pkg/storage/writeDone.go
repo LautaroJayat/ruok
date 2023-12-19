@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/gofrs/uuid"
 	"github.com/rs/zerolog/log"
 
 	"github.com/back-end-labs/ruok/pkg/job"
@@ -11,6 +12,11 @@ import (
 
 // Writes an execution result in the db
 func (sqls *SQLStorage) WriteDone(j *job.Job) error {
+	id, err := uuid.NewV7()
+	if err != nil {
+		log.Error().Err(err).Msg("could not create uuidv7 for new job")
+		return err
+	}
 	ctx := context.Background()
 	tx, err := sqls.Db.Begin(ctx)
 	defer tx.Rollback(ctx)
@@ -21,6 +27,7 @@ func (sqls *SQLStorage) WriteDone(j *job.Job) error {
 	}
 	_, err = tx.Exec(ctx, `
 	INSERT INTO ruok.job_results (
+		id,
 		job_name,
 		job_id,
 		cron_exp_string,
@@ -36,8 +43,8 @@ func (sqls *SQLStorage) WriteDone(j *job.Job) error {
 		status,
 		claimed_by,
 		succeeded
-	) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15);
-	`, j.Name, j.Id, j.CronExpString, j.Endpoint, j.HttpMethod, j.MaxRetries, j.LastExecution.UnixMicro(),
+	) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16);
+	`, id, j.Name, j.Id, j.CronExpString, j.Endpoint, j.HttpMethod, j.MaxRetries, j.LastExecution.UnixMicro(),
 		j.ShouldExecuteAt.UnixMicro(), j.LastResponseAt.UnixMicro(), j.LastMessage, j.LastStatusCode,
 		j.SuccessStatuses, j.Status, j.ClaimedBy, j.Succeeded,
 	)

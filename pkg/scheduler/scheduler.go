@@ -12,6 +12,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/gofrs/uuid"
+
 	"github.com/back-end-labs/ruok/pkg/alerting"
 	"github.com/back-end-labs/ruok/pkg/config"
 	"github.com/back-end-labs/ruok/pkg/cronParser"
@@ -22,7 +24,7 @@ import (
 
 type JobsList struct {
 	lock *sync.Mutex
-	list map[int]*jobs.Job
+	list map[uuid.UUID]*jobs.Job
 }
 
 func (jl *JobsList) AvailableSpace() int {
@@ -34,7 +36,7 @@ func (jl *JobsList) AvailableSpace() int {
 func NewJobList(maxJobs int) *JobsList {
 	return &JobsList{
 		lock: &sync.Mutex{},
-		list: make(map[int]*jobs.Job, maxJobs),
+		list: make(map[uuid.UUID]*jobs.Job, maxJobs),
 	}
 }
 
@@ -42,7 +44,7 @@ type Scheduler struct {
 	l            *JobsList
 	storage      storage.SchedulerStorage
 	parser       cronParser.ParseFn
-	notifier     chan int
+	notifier     chan uuid.UUID
 	alertManager *alerting.AlertManager
 	off          bool
 }
@@ -52,7 +54,7 @@ func NewScheduler(s storage.SchedulerStorage, am *alerting.AlertManager, jobList
 }
 
 // make sure calling context already has the sched.l.lock locked
-func (sched *Scheduler) initJobList(j []*jobs.Job, notifier chan int) {
+func (sched *Scheduler) initJobList(j []*jobs.Job, notifier chan uuid.UUID) {
 	for _, job := range j {
 		err := job.InitExpression(sched.parser)
 		if err != nil {
@@ -71,7 +73,7 @@ func (sched *Scheduler) initJobList(j []*jobs.Job, notifier chan int) {
 	}
 }
 
-func (sched *Scheduler) checkForNewJobs(notifier chan int) {
+func (sched *Scheduler) checkForNewJobs(notifier chan uuid.UUID) {
 	sched.l.lock.Lock()
 	defer sched.l.lock.Unlock()
 	freeSpace := config.MaxJobs() - len(sched.l.list)
@@ -128,7 +130,7 @@ func (sched *Scheduler) Start(signalsCh chan os.Signal) int {
 	j := sched.storage.GetAvailableJobs(sched.l.AvailableSpace())
 	log.Info().Msgf("got %d jobs", len(j))
 
-	sched.notifier = make(chan int, len(sched.l.list))
+	sched.notifier = make(chan uuid.UUID, len(sched.l.list))
 
 	log.Info().Msg("About to init all jobs")
 
@@ -137,7 +139,7 @@ func (sched *Scheduler) Start(signalsCh chan os.Signal) int {
 	sched.l.lock.Unlock()
 
 	log.Info().Msg("About to spawn 'listen for job updates' gorutine")
-	updatedJobsNotificationsch := make(chan int, 100)
+	updatedJobsNotificationsch := make(chan uuid.UUID, 100)
 	updatesListenerCtx, cancelUpdateListener := context.WithCancel(context.Background())
 	sched.storage.ListenForChanges(updatedJobsNotificationsch, updatesListenerCtx)
 
@@ -233,7 +235,7 @@ func (sched *Scheduler) shutDown(
 	return 0
 }
 
-func (sched *Scheduler) reschedule(doneJobId int) {
+func (sched *Scheduler) reschedule(doneJobId uuid.UUID) {
 	if sched.off {
 		return
 	}
@@ -249,7 +251,7 @@ func (sched *Scheduler) reschedule(doneJobId int) {
 	go job.Schedule(sched.notifier)
 }
 
-func (sched *Scheduler) refreshJob(jobId int) {
+func (sched *Scheduler) refreshJob(jobId uuid.UUID) {
 	if sched.off {
 		return
 	}

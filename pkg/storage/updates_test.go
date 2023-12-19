@@ -6,48 +6,42 @@ import (
 	"time"
 
 	"github.com/back-end-labs/ruok/pkg/config"
+	"github.com/gofrs/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestListenForChanges(t *testing.T) {
+	id1, _ := uuid.NewV7()
+	id2, _ := uuid.NewV7()
+	id3, _ := uuid.NewV7()
+	id4, _ := uuid.NewV7()
+	id5, _ := uuid.NewV7()
 	cfg := config.FromEnvs()
 	s, closeDbCon := NewStorage(&cfg)
 	defer closeDbCon()
-	ch := make(chan int)
+	ch := make(chan uuid.UUID)
 	ctx, cancel := context.WithCancel(context.Background())
 	s.ListenForChanges(ch, ctx)
-	signals := []string{"0", "1", "2", "3", "4", "5"}
+	signals := []uuid.UUID{id1, id2, id3, id4, id5}
 	for i, sig := range signals {
 		ctx := context.Background()
-		_, err := s.GetClient().Exec(ctx, "select pg_notify($1, $2)", config.AppName(), sig)
+		_, err := s.GetClient().Exec(ctx, "select pg_notify($1, $2)", config.AppName(), sig.String())
 		if err != nil {
 			t.Errorf("could not send test message: %q", err.Error())
 		}
 		v := <-ch
-		assert.Equal(t, i, v)
+		assert.Equal(t, signals[i].String(), v.String())
 	}
 	cancel()
 	s.StopListeningForChanges()
 }
 
 func TestGetJobUpdates(t *testing.T) {
-	var seedOneJobQuery = `
-INSERT INTO ruok.jobs (
-	id,
-	job_name,
-	cron_exp_string,
-	endpoint,
-	httpmethod,
-	max_retries,
-	success_statuses,
-	status,
-	claimed_by
-) VALUES (1, 'testing job' ,'* * * * *', '/', 'GET', 1, '{200}',  'claimed','application1')
-`
+	id, _ := uuid.NewV7()
 	cfg := config.FromEnvs()
 	s, closeDbCon := NewStorage(&cfg)
 	defer closeDbCon()
-	_, err := s.GetClient().Exec(context.Background(), seedOneJobQuery)
+	_, err := s.GetClient().Exec(context.Background(), seedOneJobQuery(id))
 	if err != nil {
 		t.Errorf("couldn't seed one job for the test, %q", err.Error())
 		t.FailNow()
@@ -84,13 +78,13 @@ INSERT INTO ruok.jobs (
 		new_success_statuses,
 		new_tls_client_cert,
 		new_updated_at,
-		1,
+		id,
 	)
 	if err != nil {
 		t.Errorf("couldn't update one job for the test, %q", err.Error())
 		t.FailNow()
 	}
-	j := s.GetJobUpdates(1)
+	j := s.GetJobUpdates(id)
 
 	assert.NotNil(t, j, "GetJobUpdates should return a non-nil JobUpdates instance")
 	assert.Equal(t, new_name, j.Job_name, "Unexpected cron_exp_string")

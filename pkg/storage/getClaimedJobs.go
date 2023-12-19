@@ -6,10 +6,11 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/rs/zerolog/log"
-
 	"github.com/back-end-labs/ruok/pkg/config"
 	"github.com/back-end-labs/ruok/pkg/job"
+	"github.com/gofrs/uuid"
+	pgxuuid "github.com/jackc/pgx-gofrs-uuid"
+	"github.com/rs/zerolog/log"
 )
 
 // Gets get jobs claimed by this instance
@@ -57,7 +58,7 @@ SELECT
 	jobsList := []*job.Job{}
 
 	for rows.Next() {
-		var Id int
+		var Id pgxuuid.UUID
 		var Name string
 		var CronExpString string
 		var Endpoint string
@@ -104,7 +105,7 @@ SELECT
 		}
 
 		j := &job.Job{
-			Id:              Id,
+			Id:              uuid.UUID(Id),
 			Name:            Name,
 			CronExpString:   CronExpString,
 			Endpoint:        Endpoint,

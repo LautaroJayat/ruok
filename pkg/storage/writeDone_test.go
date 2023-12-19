@@ -8,25 +8,13 @@ import (
 
 	"github.com/back-end-labs/ruok/pkg/config"
 	"github.com/back-end-labs/ruok/pkg/job"
+	"github.com/gofrs/uuid"
+	pgxuuid "github.com/jackc/pgx-gofrs-uuid"
 )
 
-var seedOneJobQuery = `
-INSERT INTO ruok.jobs (
-	id,
-	job_name,
-	cron_exp_string,
-	endpoint,
-	httpmethod,
-	max_retries,
-	success_statuses,
-	status,
-	claimed_by
-) VALUES (1, 'testing job', '* * * * *', '/', 'GET', 1, '{200}',  'claimed','application1')
-`
-
-var makeJobStruct = func(now time.Time) job.Job {
+var makeJobStruct = func(id uuid.UUID, now time.Time) job.Job {
 	return job.Job{
-		Id:              1,
+		Id:              id,
 		Name:            "testing job",
 		CronExpString:   "* * * * *",
 		LastExecution:   now,
@@ -83,9 +71,11 @@ func TestWriteDone(t *testing.T) {
 		s, close := NewStorage(&cfg)
 		defer close()
 
+		id, _ := uuid.NewV7()
+
 		ctx := context.Background()
 
-		_, err := s.GetClient().Exec(ctx, seedOneJobQuery)
+		_, err := s.GetClient().Exec(ctx, seedOneJobQuery(id))
 
 		if err != nil {
 			t.Errorf("couldn't seed due to the following error: %q", err.Error())
@@ -93,7 +83,7 @@ func TestWriteDone(t *testing.T) {
 
 		now := time.Now()
 
-		j := makeJobStruct(now)
+		j := makeJobStruct(id, now)
 
 		err = s.WriteDone(&j)
 
@@ -106,8 +96,8 @@ func TestWriteDone(t *testing.T) {
 			ctx = context.Background()
 
 			var (
-				id              int64
-				jobID           int64
+				id              pgxuuid.UUID
+				jobID           pgxuuid.UUID
 				name            string
 				cronExpString   string
 				endpoint        string
@@ -144,7 +134,7 @@ func TestWriteDone(t *testing.T) {
 			}
 
 			checkJobExecutionFields(
-				jobID,
+				uuid.UUID(jobID),
 				j,
 				t,
 				name,
@@ -226,7 +216,7 @@ func checkDoneJobFields(
 }
 
 func checkJobExecutionFields(
-	jobID int64,
+	jobID uuid.UUID,
 	j job.Job,
 	t *testing.T,
 	name,
@@ -242,8 +232,8 @@ func checkJobExecutionFields(
 	tlsClientCert sql.NullString,
 	claimedBy string,
 ) {
-	if jobID != int64(j.Id) {
-		t.Errorf("Expected JobID: %d, Got: %d", j.Id, jobID)
+	if jobID.String() != j.Id.String() {
+		t.Errorf("Expected JobID: %q, Got: %q", j.Id.String(), jobID.String())
 	}
 	if name != j.Name {
 		t.Errorf("Expected name: %s, Got: %s", j.Name, name)

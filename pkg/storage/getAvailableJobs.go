@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"time"
 
+	"github.com/gofrs/uuid"
+	pgxuuid "github.com/jackc/pgx-gofrs-uuid"
 	"github.com/rs/zerolog/log"
 
 	"github.com/back-end-labs/ruok/pkg/config"
@@ -57,7 +59,7 @@ SELECT
 	jobsList := []*job.Job{}
 
 	for rows.Next() {
-		var Id int
+		var Id pgxuuid.UUID
 		var Name string
 		var CronExpString string
 		var Endpoint string
@@ -114,7 +116,7 @@ SELECT
 
 				jobsList = append(jobsList, &job.Job{
 					Status: "bad headers",
-					Id:     Id,
+					Id:     uuid.UUID(Id),
 				})
 
 				continue
@@ -131,7 +133,7 @@ SELECT
 
 				jobsList = append(jobsList, &job.Job{
 					Status: "bad alerting headers",
-					Id:     Id,
+					Id:     uuid.UUID(Id),
 				})
 
 				continue
@@ -139,7 +141,7 @@ SELECT
 		}
 
 		j := &job.Job{
-			Id:              Id,
+			Id:              uuid.UUID(Id),
 			Name:            Name,
 			CronExpString:   CronExpString,
 			Endpoint:        Endpoint,

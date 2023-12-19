@@ -3,6 +3,8 @@ package job
 import (
 	"time"
 
+	"github.com/gofrs/uuid"
+
 	"github.com/back-end-labs/ruok/pkg/alerting/models"
 	"github.com/back-end-labs/ruok/pkg/cronParser"
 	"github.com/rs/zerolog/log"
@@ -33,7 +35,7 @@ type Handlers struct {
 	OnSuccessFn func(*Job)
 }
 type Job struct {
-	Id              int                      `json:"id"`
+	Id              uuid.UUID                `json:"id"`
 	Name            string                   `json:"name"`
 	CronExp         cronParser.CronExpresion `json:"-"`
 	CronExpString   string                   `json:"cronexp"`
@@ -65,8 +67,8 @@ type Job struct {
 }
 
 type JobExecution struct {
-	Id              int               `json:"id"`
-	JobId           int               `json:"jobId"`
+	Id              uuid.UUID         `json:"id"`
+	JobId           uuid.UUID         `json:"jobId"`
 	Name            string            `json:"name"`
 	CronExpString   string            `json:"cronexp"`
 	LastExecution   time.Time         `json:"lastExecution"`
@@ -99,7 +101,7 @@ func (j *Job) InitExpression(parseFn cronParser.ParseFn) error {
 	return nil
 }
 
-func (j *Job) Schedule(notifier chan int) string {
+func (j *Job) Schedule(notifier chan uuid.UUID) string {
 	now := time.Now()
 	nextExecution := j.CronExp.Next(now)
 	log.Info().Msgf("next execution of job %v will be at %q", j.Id, nextExecution.String())
