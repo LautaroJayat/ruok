@@ -98,7 +98,7 @@ export default () => {
           flexBasis: '50%',
         })}
       >
-        <img src="/big_ruok_logo.svg" alt="ruok_logo" />
+        <img src="/black_big_ruok_logo.svg" alt="ruok_logo" />
       </AspectRatio>
     </Container>
   );
