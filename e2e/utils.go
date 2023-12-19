@@ -15,12 +15,12 @@ import (
 
 var jobIdQuery = "jobId"
 
-func MakeTestURL(host string, jobName int, jobId int) string {
-	return fmt.Sprintf("%s/test?%s=%d-%d", host, jobIdQuery, jobName, jobId)
+func MakeTestURL(host string, jobName string) string {
+	return fmt.Sprintf("%s/test?%s=%s", host, jobIdQuery, jobName)
 }
 
-func MakeAlertUrl(host string, jobName int, jobId int) string {
-	return fmt.Sprintf("%s/alert?%s=%d-%d", host, jobIdQuery, jobName, jobId)
+func MakeAlertUrl(host string, jobName string) string {
+	return fmt.Sprintf("%s/alert?%s=%s", host, jobIdQuery, jobName)
 }
 
 func CreateJob(t *testing.T, i storage.CreateJobInput) bool {
@@ -38,6 +38,36 @@ func CreateJob(t *testing.T, i storage.CreateJobInput) bool {
 		t.Logf("%d\n%s\n", res.StatusCode, string(response))
 	}
 	return res.StatusCode == http.StatusCreated
+}
+
+func UpdateJob(t *testing.T, id string, i storage.UpdateJobInput) bool {
+	bytesBody, err := json.Marshal(i)
+	if err != nil {
+		return false
+	}
+
+	req, err := http.NewRequest(http.MethodPut, "http://localhost:8080/v1/jobs/"+id, bytes.NewReader(bytesBody))
+
+	if err != nil {
+		return false
+	}
+
+	client := http.Client{}
+
+	res, err := client.Do(req)
+
+	if err != nil {
+		return false
+	}
+
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusAccepted {
+		response, _ := io.ReadAll(res.Body)
+		t.Logf("%d\n%s\n", res.StatusCode, string(response))
+	}
+
+	return res.StatusCode == http.StatusAccepted
 }
 
 func ServerUp(t *testing.T) bool {

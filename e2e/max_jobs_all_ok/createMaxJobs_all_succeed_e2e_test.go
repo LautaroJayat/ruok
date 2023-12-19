@@ -51,17 +51,17 @@ func setupTestServer(results *mapping) *httptest.Server {
 	return thirdPartyServer
 }
 
-func createJobInput(id int, jobName int, host string) storage.CreateJobInput {
+func createJobInput(id int, jobName string, host string) storage.CreateJobInput {
 	return storage.CreateJobInput{
-		Name:            fmt.Sprintf("job %d", id),
+		Name:            fmt.Sprintf("job%d", id),
 		CronExpString:   "*/5 * * * * * *",
 		MaxRetries:      1,
-		Endpoint:        e2e.MakeTestURL(host, jobName, id),
+		Endpoint:        e2e.MakeTestURL(host, jobName),
 		HttpMethod:      "GET",
 		SuccessStatuses: []int{200},
 		AlertStrategy:   config.ALERT_HTTP,
 		AlertMethod:     "POST",
-		AlertEndpoint:   e2e.MakeAlertUrl(host, jobName, id),
+		AlertEndpoint:   e2e.MakeAlertUrl(host, jobName),
 		AlertHeaders:    map[string]string{"Authorization": "bearer jwt"},
 		AlertPayload:    "",
 	}
@@ -91,7 +91,7 @@ func TestCreateMaxJobs_all_succeed(t *testing.T) {
 
 	for i := 0; i < users; i++ {
 		for j := 0; j < jobsPerUser; j++ {
-			jobList = append(jobList, createJobInput(j, i, toBeMonitored.URL))
+			jobList = append(jobList, createJobInput(j, fmt.Sprintf("job%d-%d", i, j), toBeMonitored.URL))
 		}
 	}
 	_, currentFile, _, _ := runtime.Caller(0)
