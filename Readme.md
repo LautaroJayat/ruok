@@ -4,6 +4,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/back-end-labs/ruok)](https://goreportcard.com/report/github.com/helm/helm)
 ![Version](https://img.shields.io/badge/version-unstable-blue)
 [![License](https://img.shields.io/github/license/back-end-labs/ruok)](/LICENSE)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fback-end-labs%2Fruok.svg?type=shield&issueType=license)](https://app.fossa.com/projects/git%2Bgithub.com%2Fback-end-labs%2Fruok?ref=badge_shield&issueType=license)
 
 <div align="center">
     <img  src="./assets/horizontal_logo.png" alt="RUOK Logo" />
