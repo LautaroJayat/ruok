@@ -4,6 +4,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/back-end-labs/ruok)](https://goreportcard.com/report/github.com/helm/helm)
 ![Version](https://img.shields.io/badge/version-unstable-blue)
 [![License](https://img.shields.io/github/license/back-end-labs/ruok)](/LICENSE)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fback-end-labs%2Fruok.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fback-end-labs%2Fruok?ref=badge_shield)
 
 <div align="center">
     <img  src="./assets/horizontal_logo.png" alt="RUOK Logo" />
@@ -39,6 +40,9 @@ RUOK Scheduler is an open-source tool designed for hassle-free service monitorin
     - [5.5 Get Instance Info](#55-get-instance-info)
   - [6. Cron Specification](#6-cron-specification)
   - [7. License](#7-license)
+
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fback-end-labs%2Fruok.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fback-end-labs%2Fruok?ref=badge_large)
 
 ## 1. Introduction
 
